@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>Mystic Realms | Interactive Adventure</title>
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- ========================= -->
+  <!-- LOADING / PARTICLE LAYERS -->
+  <!-- ========================= -->
+
+  <div class="background-overlay"></div>
+  <div id="particles"></div>
+  <div id="fog"></div>
+
+  <!-- ========================= -->
+  <!-- START SCREEN -->
+  <!-- ========================= -->
+
+  <section id="startScreen" class="screen active">
+
+    <div class="start-content glass">
+
+      <p class="eyebrow">
+        AN INTERACTIVE MYSTICAL ADVENTURE
+      </p>
+
+      <h1>
+        MYSTIC
+        <span>REALMS</span>
+      </h1>
+
+      <p class="subtitle">
+        Every path hides a secret.
+        Every companion has a story.
+        Every choice can change your destiny.
+      </p>
+
+      <div class="start-actions">
+
+        <button
+          id="newGameBtn"
+          class="primary-btn large-btn"
+        >
+          Begin Your Adventure
+        </button>
+
+        <button
+          id="continueBtn"
+          class="secondary-btn"
+        >
+          Continue Saved Journey
+        </button>
+
+      </div>
+
+      <p class="small-note">
+        🎧 Turn on sound for spoken character dialogue.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- ========================= -->
+  <!-- CHARACTER CREATION -->
+  <!-- ========================= -->
+
+  <section id="characterScreen" class="screen">
+
+    <div class="creation-container">
+
+      <div class="creation-header">
+
+        <p class="eyebrow">
+          CHAPTER ZERO
+        </p>
+
+        <h2>
+          Choose Your Adventurer
+        </h2>
+
+        <p>
+          Your journey begins with a single identity.
+          The realms will remember your choices.
+        </p>
+
+      </div>
+
+
+      <!-- Character Type -->
+
+      <div class="selection-grid">
+
+        <div
+          class="character-card selected"
+          data-character="female"
+        >
+
+          <div class="character-icon">
+            👸
+          </div>
+
+          <h3>
+            Female Adventurer
+          </h3>
+
+          <p>
+            Elegant, courageous and destined
+            for a mystery older than the kingdom.
+          </p>
+
+        </div>
+
+
+        <div
+          class="character-card"
+          data-character="male"
+        >
+
+          <div class="character-icon">
+            🤴
+          </div>
+
+          <h3>
+            Male Adventurer
+          </h3>
+
+          <p>
+            Fearless, curious and ready to
+            explore worlds beyond imagination.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- Player Name -->
+
+      <div class="input-group">
+
+        <label for="playerName">
+          Your Name
+        </label>
+
+        <input
+          id="playerName"
+          type="text"
+          placeholder="Enter your adventurer name"
+          maxlength="20"
+        />
+
+      </div>
+
+
+      <!-- Outfit -->
+
+      <div class="outfit-section">
+
+        <h3>
+          Choose Your Royal Attire
+        </h3>
+
+        <div class="outfit-grid">
+
+          <button
+            class="outfit-card selected"
+            data-outfit="Sky Royal"
+          >
+            ✨
+            <span>Sky Royal</span>
+          </button>
+
+
+          <button
+            class="outfit-card"
+            data-outfit="Emerald Guardian"
+          >
+            🌿
+            <span>Emerald Guardian</span>
+          </button>
+
+
+          <button
+            class="outfit-card"
+            data-outfit="Crystal Silver"
+          >
+            ❄️
+            <span>Crystal Silver</span>
+          </button>
+
+
+          <button
+            class="outfit-card"
+            data-outfit="Midnight Royal"
+          >
+            🌙
+            <span>Midnight Royal</span>
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <button
+        id="continueWorldBtn"
+        class="primary-btn large-btn"
+      >
+        Continue to the Realms
+      </button>
+
+    </div>
+
+  </section>
+
+
+  <!-- ========================= -->
+  <!-- WORLD SELECTION -->
+  <!-- ========================= -->
+
+  <section id="worldScreen" class="screen">
+
+    <div class="world-selection">
+
+      <div class="creation-header">
+
+        <p class="eyebrow">
+          THE PORTALS HAVE OPENED
+        </p>
+
+        <h2>
+          Choose Your First Path
+        </h2>
+
+        <p>
+          The first world you enter will shape
+          the beginning of your mystery.
+        </p>
+
+      </div>
+
+
+      <div class="world-grid">
+
+        <button
+          class="world-card forest"
+          data-world="forest"
+        >
+          <span class="world-icon">🌲</span>
+
+          <h3>
+            Whispering Forest
+          </h3>
+
+          <p>
+            The trees remember those
+            who never returned.
+          </p>
+        </button>
+
+
+        <button
+          class="world-card ruins"
+          data-world="ruins"
+        >
+          <span class="world-icon">🏚️</span>
+
+          <h3>
+            Forgotten Ruins
+          </h3>
+
+          <p>
+            Something beneath the stones
+            is still awake.
+          </p>
+        </button>
+
+
+        <button
+          class="world-card desert"
+          data-world="desert"
+        >
+          <span class="world-icon">🏜️</span>
+
+          <h3>
+            Desert of Echoes
+          </h3>
+
+          <p>
+            Follow the wrong voice
+            and the desert keeps you.
+          </p>
+        </button>
+
+
+        <button
+          class="world-card mountains"
+          data-world="mountains"
+        >
+          <span class="world-icon">⛰️</span>
+
+          <h3>
+            Frozen Mountains
+          </h3>
+
+          <p>
+            Beyond the storm lies
+            the Crystal Kingdom.
+          </p>
+        </button>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- ========================= -->
+  <!-- MAIN GAME -->
+  <!-- ========================= -->
+
+  <section id="gameScreen" class="screen">
+
+
+    <!-- TOP HUD -->
+
+    <header class="game-header glass">
+
+      <div class="player-info">
+
+        <div class="avatar">
+          <span id="playerAvatar">
+            👸
+          </span>
+        </div>
+
+        <div>
+
+          <h3 id="hudPlayerName">
+            Adventurer
+          </h3>
+
+          <p id="hudLocation">
+            Unknown Realm
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="stats">
+
+        <div class="stat">
+
+          <span>❤️ Courage</span>
+
+          <div class="stat-bar">
+            <div
+              id="courageBar"
+              class="stat-fill courage-fill"
+            ></div>
+          </div>
+
+        </div>
+
+
+        <div class="stat">
+
+          <span>✨ Magic</span>
+
+          <div class="stat-bar">
+            <div
+              id="magicBar"
+              class="stat-fill magic-fill"
+            ></div>
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="header-actions">
+
+        <button
+          id="voiceBtn"
+          class="icon-btn"
+          title="Toggle Voice"
+        >
+          🔊
+        </button>
+
+        <button
+          id="saveBtn"
+          class="icon-btn"
+          title="Save Game"
+        >
+          💾
+        </button>
+
+      </div>
+
+    </header>
+
+
+    <!-- MAIN GAME AREA -->
+
+    <main class="game-layout">
+
+
+      <!-- LEFT HUD -->
+
+      <aside class="side-panel left-panel">
+
+        <button
+          class="hud-menu-btn"
+          data-panel="inventory"
+        >
+          🎒
+          <span>Inventory</span>
+        </button>
+
+        <button
+          class="hud-menu-btn"
+          data-panel="journal"
+        >
+          📖
+          <span>Journal</span>
+        </button>
+
+        <button
+          class="hud-menu-btn"
+          data-panel="companions"
+        >
+          🤖
+          <span>Companions</span>
+        </button>
+
+        <button
+          class="hud-menu-btn"
+          data-panel="achievements"
+        >
+          🏆
+          <span>Achievements</span>
+        </button>
+
+      </aside>
+
+
+      <!-- SCENE -->
+
+      <section class="scene-container">
+
+        <div
+          id="scene"
+          class="scene glass"
+        >
+
+          <div
+            id="worldSymbol"
+            class="world-symbol"
+          >
+            🌌
+          </div>
+
+
+          <div class="scene-content">
+
+            <p
+              id="chapterLabel"
+              class="chapter-label"
+            >
+              CHAPTER ONE
+            </p>
+
+
+            <h2 id="sceneTitle">
+              The Journey Begins
+            </h2>
+
+
+            <div
+              id="dialogueBox"
+              class="dialogue-box"
+            >
+
+              <div class="speaker-info">
+
+                <div
+                  id="speakerIcon"
+                  class="speaker-icon"
+                >
+                  🌙
+                </div>
+
+
+                <div>
+
+                  <span
+                    id="speakerName"
+                    class="speaker-name"
+                  >
+                    Narrator
+                  </span>
+
+                  <span
+                    id="speakerRole"
+                    class="speaker-role"
+                  >
+                    The Ancient Voice
+                  </span>
+
+                </div>
+
+              </div>
+
+
+              <p id="dialogueText">
+                Your journey is about to begin.
+              </p>
+
+            </div>
+
+
+            <div
+              id="choices"
+              class="choices"
+            ></div>
+
+
+            <div
+              id="eventMessage"
+              class="event-message"
+            ></div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- RIGHT STATUS -->
+
+      <aside class="right-panel">
+
+        <div class="glass mini-card">
+
+          <p class="mini-title">
+            CURRENT MYSTERY
+          </p>
+
+          <h3 id="mysteryTitle">
+            The Lost Crown
+          </h3>
+
+          <p id="mysteryProgress">
+            Clues discovered: 0
+          </p>
+
+        </div>
+
+
+        <div class="glass mini-card">
+
+          <p class="mini-title">
+            ACTIVE COMPANION
+          </p>
+
+          <h3 id="activeCompanion">
+            None
+          </h3>
+
+          <p id="companionStatus">
+            You are travelling alone.
+          </p>
+
+        </div>
+
+      </aside>
+
+    </main>
+
+
+  </section>
+
+
+  <!-- ========================= -->
+  <!-- MODAL -->
+  <!-- ========================= -->
+
+  <div
+    id="modal"
+    class="modal"
+  >
+
+    <div class="modal-content glass">
+
+      <button
+        id="closeModal"
+        class="close-modal"
+      >
+        ✕
+      </button>
+
+      <h2 id="modalTitle">
+        Panel
+      </h2>
+
+      <div id="modalBody">
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ========================= -->
+  <!-- ACHIEVEMENT TOAST -->
+  <!-- ========================= -->
+
+  <div
+    id="achievementToast"
+    class="achievement-toast"
+  >
+
+    <span class="achievement-icon">
+      🏆
+    </span>
+
+    <div>
+
+      <strong>
+        Achievement Unlocked
+      </strong>
+
+      <p id="achievementText">
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- MAIN JAVASCRIPT -->
+
+  <script src="script.js"></script>
+
+</body>
+</html>
