@@ -1,181 +1,130 @@
-/* ========================================= */
-/* MYSTIC REALMS - VERSION 1 GAME ENGINE */
-/* ========================================= */
+/* =========================================================
+   MYSTIC REALMS
+   WORKING GAME ENGINE
+   Matched specifically to the provided index.html
+========================================================= */
 
 
-/* ========================================= */
-/* GAME STATE */
-/* ========================================= */
+/* =========================================================
+   SAFE ELEMENT HELPER
+========================================================= */
+
+function getElement(id) {
+  return document.getElementById(id);
+}
+
+
+/* =========================================================
+   GAME STATE
+========================================================= */
 
 const GameState = {
-
   player: {
     name: "Adventurer",
     character: "female",
     outfit: "Sky Royal",
-
     courage: 80,
     magic: 50,
-
-    location: "",
+    location: "Unknown Realm"
   },
 
   inventory: [],
-
   clues: [],
-
   achievements: [],
 
   companion: null,
-
   companionTrust: 50,
 
   currentScene: null,
 
-  voiceEnabled: true,
-
-  visitedWorlds: [],
-
+  voiceEnabled: true
 };
 
 
-/* ========================================= */
-/* DOM ELEMENTS */
-/* ========================================= */
+/* =========================================================
+   DOM ELEMENTS
+========================================================= */
 
 const screens = {
-  start: document.getElementById("startScreen"),
-  character: document.getElementById("characterScreen"),
-  world: document.getElementById("worldScreen"),
-  game: document.getElementById("gameScreen"),
+  start: getElement("startScreen"),
+  character: getElement("characterScreen"),
+  world: getElement("worldScreen"),
+  game: getElement("gameScreen")
 };
 
+const playerNameInput = getElement("playerName");
 
-const playerNameInput =
-  document.getElementById("playerName");
+const choicesContainer = getElement("choices");
 
+const dialogueText = getElement("dialogueText");
+const speakerName = getElement("speakerName");
+const speakerRole = getElement("speakerRole");
+const speakerIcon = getElement("speakerIcon");
 
-const choicesContainer =
-  document.getElementById("choices");
+const sceneTitle = getElement("sceneTitle");
+const chapterLabel = getElement("chapterLabel");
+const worldSymbol = getElement("worldSymbol");
 
+const hudPlayerName = getElement("hudPlayerName");
+const hudLocation = getElement("hudLocation");
+const playerAvatar = getElement("playerAvatar");
 
-const dialogueText =
-  document.getElementById("dialogueText");
+const courageBar = getElement("courageBar");
+const magicBar = getElement("magicBar");
 
+const mysteryProgress = getElement("mysteryProgress");
 
-const speakerName =
-  document.getElementById("speakerName");
+const activeCompanion = getElement("activeCompanion");
+const companionStatus = getElement("companionStatus");
 
+const eventMessage = getElement("eventMessage");
 
-const speakerRole =
-  document.getElementById("speakerRole");
+const modal = getElement("modal");
+const modalTitle = getElement("modalTitle");
+const modalBody = getElement("modalBody");
 
-
-const speakerIcon =
-  document.getElementById("speakerIcon");
-
-
-const sceneTitle =
-  document.getElementById("sceneTitle");
-
-
-const chapterLabel =
-  document.getElementById("chapterLabel");
-
-
-const worldSymbol =
-  document.getElementById("worldSymbol");
+const achievementToast = getElement("achievementToast");
+const achievementText = getElement("achievementText");
 
 
-const hudPlayerName =
-  document.getElementById("hudPlayerName");
-
-
-const hudLocation =
-  document.getElementById("hudLocation");
-
-
-const playerAvatar =
-  document.getElementById("playerAvatar");
-
-
-const courageBar =
-  document.getElementById("courageBar");
-
-
-const magicBar =
-  document.getElementById("magicBar");
-
-
-const mysteryProgress =
-  document.getElementById("mysteryProgress");
-
-
-const activeCompanion =
-  document.getElementById("activeCompanion");
-
-
-const companionStatus =
-  document.getElementById("companionStatus");
-
-
-const eventMessage =
-  document.getElementById("eventMessage");
-
-
-const modal =
-  document.getElementById("modal");
-
-
-const modalTitle =
-  document.getElementById("modalTitle");
-
-
-const modalBody =
-  document.getElementById("modalBody");
-
-
-const achievementToast =
-  document.getElementById("achievementToast");
-
-
-const achievementText =
-  document.getElementById("achievementText");
-
-
-/* ========================================= */
-/* SCREEN NAVIGATION */
-/* ========================================= */
+/* =========================================================
+   SCREEN NAVIGATION
+========================================================= */
 
 function showScreen(screenName) {
 
   Object.values(screens).forEach((screen) => {
-    screen.classList.remove("active");
+    if (screen) {
+      screen.classList.remove("active");
+    }
   });
 
-  screens[screenName].classList.add("active");
+  if (screens[screenName]) {
+    screens[screenName].classList.add("active");
+  }
 }
 
 
-/* ========================================= */
-/* PARTICLES */
-/* ========================================= */
+/* =========================================================
+   PARTICLE SYSTEM
+========================================================= */
 
 function createParticles() {
 
-  const container =
-    document.getElementById("particles");
+  const container = getElement("particles");
 
+  if (!container) return;
+
+  container.innerHTML = "";
 
   for (let i = 0; i < 55; i++) {
 
-    const particle =
-      document.createElement("div");
+    const particle = document.createElement("div");
 
     particle.className = "particle";
 
-    particle.style.left =
-      Math.random() * 100 + "%";
+    particle.style.left = Math.random() * 100 + "%";
+    particle.style.top = Math.random() * 100 + "%";
 
     particle.style.animationDuration =
       8 + Math.random() * 15 + "s";
@@ -191,145 +140,151 @@ function createParticles() {
 }
 
 
-/* ========================================= */
-/* VOICE SYSTEM */
-/* ========================================= */
+/* =========================================================
+   VOICE SYSTEM
+========================================================= */
 
 function speak(text, type = "normal") {
 
-  if (!GameState.voiceEnabled) {
-    return;
-  }
+  if (!GameState.voiceEnabled) return;
 
-  if (!("speechSynthesis" in window)) {
-    return;
-  }
-
+  if (!("speechSynthesis" in window)) return;
 
   window.speechSynthesis.cancel();
-
 
   const speech =
     new SpeechSynthesisUtterance(text);
 
-
   speech.volume = 0.9;
 
+  switch (type) {
 
-  /*
-    Different voice personalities
-  */
+    case "queen":
+      speech.rate = 0.88;
+      speech.pitch = 1.05;
+      break;
 
-  if (type === "queen") {
+    case "fairy":
+      speech.rate = 0.95;
+      speech.pitch = 1.35;
+      break;
 
-    speech.rate = 0.88;
-    speech.pitch = 1.05;
+    case "robot":
+      speech.rate = 1.05;
+      speech.pitch = 1.15;
+      break;
 
+    case "witch":
+      speech.rate = 0.72;
+      speech.pitch = 0.75;
+      break;
+
+    case "ghost":
+      speech.rate = 0.70;
+      speech.pitch = 0.85;
+      break;
+
+    case "guardian":
+      speech.rate = 0.80;
+      speech.pitch = 0.65;
+      break;
+
+    default:
+      speech.rate = 0.9;
+      speech.pitch = 1;
   }
-
-  else if (type === "fairy") {
-
-    speech.rate = 0.95;
-    speech.pitch = 1.35;
-
-  }
-
-  else if (type === "robot") {
-
-    speech.rate = 1.05;
-    speech.pitch = 1.15;
-
-  }
-
-  else if (type === "witch") {
-
-    speech.rate = 0.72;
-    speech.pitch = 0.75;
-
-  }
-
-  else if (type === "ghost") {
-
-    speech.rate = 0.7;
-    speech.pitch = 0.85;
-
-  }
-
-  else if (type === "guardian") {
-
-    speech.rate = 0.8;
-    speech.pitch = 0.65;
-
-  }
-
-  else {
-
-    speech.rate = 0.9;
-    speech.pitch = 1;
-  }
-
 
   window.speechSynthesis.speak(speech);
 }
 
 
-/* ========================================= */
-/* UPDATE HUD */
-/* ========================================= */
+/* =========================================================
+   UPDATE HUD
+========================================================= */
 
 function updateHUD() {
 
-  hudPlayerName.textContent =
-    GameState.player.name;
+  if (hudPlayerName) {
+    hudPlayerName.textContent =
+      GameState.player.name;
+  }
 
+  if (hudLocation) {
+    hudLocation.textContent =
+      GameState.player.location;
+  }
 
-  hudLocation.textContent =
-    GameState.player.location ||
-    "Unknown Realm";
+  if (playerAvatar) {
+    playerAvatar.textContent =
+      GameState.player.character === "female"
+        ? "👸"
+        : "🤴";
+  }
 
+  if (courageBar) {
+    courageBar.style.width =
+      GameState.player.courage + "%";
+  }
 
-  playerAvatar.textContent =
-    GameState.player.character === "female"
-      ? "👸"
-      : "🤴";
+  if (magicBar) {
+    magicBar.style.width =
+      GameState.player.magic + "%";
+  }
 
-
-  courageBar.style.width =
-    GameState.player.courage + "%";
-
-
-  magicBar.style.width =
-    GameState.player.magic + "%";
-
-
-  mysteryProgress.textContent =
-    Clues discovered: ${GameState.clues.length};
-
+  if (mysteryProgress) {
+    mysteryProgress.textContent =
+      Clues discovered: ${GameState.clues.length};
+  }
 
   if (GameState.companion) {
 
-    activeCompanion.textContent =
-      GameState.companion.name;
+    if (activeCompanion) {
+      activeCompanion.textContent =
+        GameState.companion.name;
+    }
 
-    companionStatus.textContent =
-      GameState.companion.description;
+    if (companionStatus) {
+      companionStatus.textContent =
+        GameState.companion.description;
+    }
 
-  }
+  } else {
 
-  else {
+    if (activeCompanion) {
+      activeCompanion.textContent = "None";
+    }
 
-    activeCompanion.textContent =
-      "None";
-
-    companionStatus.textContent =
-      "You are travelling alone.";
+    if (companionStatus) {
+      companionStatus.textContent =
+        "You are travelling alone.";
+    }
   }
 }
 
 
-/* ========================================= */
-/* INVENTORY */
-/* ========================================= */
+/* =========================================================
+   EVENT MESSAGE
+========================================================= */
+
+let eventTimer;
+
+function showEvent(message) {
+
+  if (!eventMessage) return;
+
+  clearTimeout(eventTimer);
+
+  eventMessage.textContent = message;
+
+  eventTimer = setTimeout(() => {
+    eventMessage.textContent = "";
+  }, 4000);
+}
+
+
+/* =========================================================
+   INVENTORY
+========================================================= */
 
 function addItem(icon, name, description) {
 
@@ -338,15 +293,13 @@ function addItem(icon, name, description) {
       (item) => item.name === name
     );
 
-
   if (!exists) {
 
     GameState.inventory.push({
       icon,
       name,
-      description,
+      description
     });
-
 
     showEvent(
       ${icon} Added to inventory: ${name}
@@ -355,9 +308,9 @@ function addItem(icon, name, description) {
 }
 
 
-/* ========================================= */
-/* CLUES */
-/* ========================================= */
+/* =========================================================
+   CLUES
+========================================================= */
 
 function addClue(name) {
 
@@ -374,66 +327,42 @@ function addClue(name) {
 }
 
 
-/* ========================================= */
-/* EVENTS */
-/* ========================================= */
-
-function showEvent(message) {
-
-  eventMessage.textContent =
-    message;
-
-
-  setTimeout(() => {
-
-    eventMessage.textContent = "";
-
-  }, 4000);
-}
-
-
-/* ========================================= */
-/* ACHIEVEMENTS */
-/* ========================================= */
+/* =========================================================
+   ACHIEVEMENTS
+========================================================= */
 
 function unlockAchievement(name) {
 
-  if (
-    GameState.achievements.includes(name)
-  ) {
+  if (GameState.achievements.includes(name)) {
     return;
   }
 
-
   GameState.achievements.push(name);
 
+  if (achievementText) {
+    achievementText.textContent = name;
+  }
 
-  achievementText.textContent =
-    name;
+  if (achievementToast) {
 
+    achievementToast.classList.add("show");
 
-  achievementToast.classList.add("show");
-
-
-  setTimeout(() => {
-
-    achievementToast.classList.remove("show");
-
-  }, 4500);
+    setTimeout(() => {
+      achievementToast.classList.remove("show");
+    }, 4500);
+  }
 }
 
 
-/* ========================================= */
-/* COMPANIONS */
-/* ========================================= */
+/* =========================================================
+   COMPANIONS
+========================================================= */
 
 function setCompanion(companion) {
 
-  GameState.companion =
-    companion;
+  GameState.companion = companion;
 
   updateHUD();
-
 
   unlockAchievement(
     Companion Joined: ${companion.name}
@@ -441,17 +370,15 @@ function setCompanion(companion) {
 }
 
 
-/* ========================================= */
-/* RANDOM EVENTS */
-/* ========================================= */
+/* =========================================================
+   RANDOM MYSTERY EVENT
+========================================================= */
 
 function randomEvent() {
 
-  const chance =
-    Math.random();
+  const chance = Math.random();
 
-
-  if (chance < 0.25) {
+  if (chance < 0.15) {
 
     GameState.player.magic =
       Math.min(
@@ -459,14 +386,13 @@ function randomEvent() {
         GameState.player.magic + 5
       );
 
-
     showEvent(
       "✨ A mysterious energy increases your magic."
     );
+
   }
 
-
-  else if (chance < 0.5) {
+  else if (chance < 0.30) {
 
     GameState.player.courage =
       Math.max(
@@ -474,129 +400,121 @@ function randomEvent() {
         GameState.player.courage - 5
       );
 
-
     showEvent(
-      "🌫️ Something moves in the darkness. Courage decreases."
+      "🌫️ Something moves in the darkness..."
     );
+
   }
 
-
-  else if (chance < 0.7) {
+  else if (chance < 0.45) {
 
     showEvent(
       "👣 You hear footsteps behind you..."
     );
   }
 
-
   updateHUD();
 }
 
 
-/* ========================================= */
-/* SCENE SYSTEM */
-/* ========================================= */
+/* =========================================================
+   LOAD SCENE
+========================================================= */
 
 function loadScene(scene) {
 
-  GameState.currentScene =
-    scene.id;
+  if (!scene) return;
 
+  GameState.currentScene = scene.id;
 
   GameState.player.location =
     scene.location;
 
+  if (chapterLabel) {
+    chapterLabel.textContent =
+      scene.chapter;
+  }
 
-  chapterLabel.textContent =
-    scene.chapter;
+  if (sceneTitle) {
+    sceneTitle.textContent =
+      scene.title;
+  }
 
+  if (worldSymbol) {
+    worldSymbol.textContent =
+      scene.symbol;
+  }
 
-  sceneTitle.textContent =
-    scene.title;
+  if (speakerName) {
+    speakerName.textContent =
+      scene.speaker.name;
+  }
 
+  if (speakerRole) {
+    speakerRole.textContent =
+      scene.speaker.role;
+  }
 
-  worldSymbol.textContent =
-    scene.symbol;
+  if (speakerIcon) {
+    speakerIcon.textContent =
+      scene.speaker.icon;
+  }
 
+  if (dialogueText) {
+    dialogueText.textContent =
+      scene.text;
+  }
 
-  speakerName.textContent =
-    scene.speaker.name;
+  if (choicesContainer) {
 
+    choicesContainer.innerHTML = "";
 
-  speakerRole.textContent =
-    scene.speaker.role;
-
-
-  speakerIcon.textContent =
-    scene.speaker.icon;
-
-
-  dialogueText.textContent =
-    scene.text;
-
-
-  choicesContainer.innerHTML = "";
-
-
-  scene.choices.forEach(
-    (choice) => {
+    scene.choices.forEach((choice) => {
 
       const button =
         document.createElement("button");
 
-
-      button.className =
-        "choice-btn";
-
+      button.className = "choice-btn";
 
       button.textContent =
         choice.text;
-
 
       button.addEventListener(
         "click",
         () => {
 
           if (choice.action) {
-
             choice.action();
           }
 
+          updateHUD();
 
           if (choice.next) {
-
             loadScene(
               Scenes[choice.next]
             );
           }
-
         }
       );
 
-
-      choicesContainer.appendChild(
-        button
-      );
-    }
-  );
-
+      choicesContainer.appendChild(button);
+    });
+  }
 
   updateHUD();
-
 
   speak(
     scene.text,
     scene.speaker.voice
   );
 
-
   randomEvent();
 }
 
 
-/* ========================================= */
-/* STORY SCENES */
-/* ========================================= */
+/* =========================================================
+   STORY SCENES
+========================================================= */
 
 const Scenes = {
 
@@ -605,1072 +523,699 @@ const Scenes = {
 
     id: "forestStart",
 
-    chapter:
-      "CHAPTER ONE",
+    chapter: "CHAPTER ONE",
 
-    title:
-      "The Whispering Forest",
+    title: "The Whispering Forest",
 
-    location:
-      "Whispering Forest",
+    location: "Whispering Forest",
 
-    symbol:
-      "🌲",
-
+    symbol: "🌲",
 
     speaker: {
-
-      name:
-        "The Forest",
-
-      role:
-        "An Ancient Presence",
-
-      icon:
-        "🌲",
-
-      voice:
-        "ghost",
+      name: "The Forest",
+      role: "An Ancient Presence",
+      icon: "🌲",
+      voice: "ghost"
     },
-
 
     text:
       "The trees stand silent as you enter. A cold wind passes through the forest, carrying a whisper that sounds almost like your name.",
 
-
     choices: [
 
       {
-
         text:
           "Follow the whisper deeper into the forest.",
-
         next:
-          "forestWhisper",
+          "forestWhisper"
       },
-
 
       {
-
         text:
           "Search the ground for clues.",
+        action: () => {
 
-        action:
-          () => {
+          addClue(
+            "Strange Silver Footprints"
+          );
 
-            addClue(
-              "Strange Silver Footprints"
-            );
-
-
-            addItem(
-              "🗝️",
-              "Ancient Key",
-              "A key engraved with a crown symbol."
-            );
-          },
-
+          addItem(
+            "🗝️",
+            "Ancient Key",
+            "A key engraved with a crown symbol."
+          );
+        },
         next:
-          "forestWhisper",
-      },
-
-    ],
+          "forestWhisper"
+      }
+    ]
   },
 
 
   forestWhisper: {
 
-    id:
-      "forestWhisper",
+    id: "forestWhisper",
 
-    chapter:
-      "CHAPTER ONE",
+    chapter: "CHAPTER ONE",
 
-    title:
-      "Someone Is Watching",
+    title: "Someone Is Watching",
 
-    location:
-      "Whispering Forest",
+    location: "Whispering Forest",
 
-    symbol:
-      "👣",
-
+    symbol: "👣",
 
     speaker: {
-
-      name:
-        "Unknown Voice",
-
-      role:
-        "Hidden in the Shadows",
-
-      icon:
-        "🌫️",
-
-      voice:
-        "ghost",
+      name: "Unknown Voice",
+      role: "Hidden in the Shadows",
+      icon: "🌫️",
+      voice: "ghost"
     },
-
 
     text:
       "Stop. Do not take another step. The path ahead is not the path you think it is.",
 
-
     choices: [
 
       {
-
         text:
           "Ask who is speaking.",
-
         next:
-          "companionArrival",
+          "companionArrival"
       },
-
 
       {
-
         text:
           "Ignore the voice and continue.",
+        action: () => {
 
-        action:
-          () => {
-
-            GameState.player.courage =
-              Math.max(
-                0,
-                GameState.player.courage - 10
-              );
-
-
-            updateHUD();
-          },
-
+          GameState.player.courage =
+            Math.max(
+              0,
+              GameState.player.courage - 10
+            );
+        },
         next:
-          "darkForest",
-      },
-
-    ],
+          "darkForest"
+      }
+    ]
   },
 
 
   companionArrival: {
 
-    id:
-      "companionArrival",
+    id: "companionArrival",
 
-    chapter:
-      "CHAPTER TWO",
+    chapter: "CHAPTER TWO",
 
-    title:
-      "The Dimensional Companion",
+    title: "The Dimensional Companion",
 
-    location:
-      "Whispering Forest",
+    location: "Whispering Forest",
 
-    symbol:
-      "🤖",
-
+    symbol: "🤖",
 
     speaker: {
-
-      name:
-        "NOVA",
-
-      role:
-        "Dimensional Guide",
-
-      icon:
-        "🤖",
-
-      voice:
-        "robot",
+      name: "NOVA",
+      role: "Dimensional Guide",
+      icon: "🤖",
+      voice: "robot"
     },
-
 
     text:
       "My name is NOVA. I have been searching for the one connected to the Lost Crown. My sensors suggest that might be you.",
 
-
     choices: [
 
       {
-
         text:
           "Allow NOVA to join your journey.",
 
-        action:
-          () => {
+        action: () => {
 
-            setCompanion({
+          setCompanion({
+            name: "NOVA",
+            description:
+              "A cheerful dimensional guide with mysterious gadgets.",
+            type: "robot"
+          });
 
-              name:
-                "NOVA",
+          addItem(
+            "🚪",
+            "Dimensional Gateway",
+            "A device capable of opening unstable portals."
+          );
 
-              description:
-                "A cheerful dimensional companion with mysterious gadgets.",
-
-              type:
-                "robot",
-            });
-
-
-            addItem(
-              "🚪",
-              "Dimensional Gateway",
-              "A device capable of opening unstable portals."
-            );
-
-
-            addItem(
-              "🔦",
-              "Adaptive Light",
-              "Reveals hidden symbols and dangerous paths."
-            );
-          },
+          addItem(
+            "🔦",
+            "Adaptive Light",
+            "Reveals hidden symbols and dangerous paths."
+          );
+        },
 
         next:
-          "crownClue",
+          "crownClue"
       },
 
-
       {
-
         text:
           "Tell NOVA you do not trust anyone yet.",
 
-        action:
-          () => {
-
-            GameState.companionTrust =
-              30;
-          },
+        action: () => {
+          GameState.companionTrust = 30;
+        },
 
         next:
-          "crownClue",
-      },
-
-    ],
+          "crownClue"
+      }
+    ]
   },
 
 
   darkForest: {
 
-    id:
-      "darkForest",
+    id: "darkForest",
 
-    chapter:
-      "CHAPTER TWO",
+    chapter: "CHAPTER TWO",
 
-    title:
-      "The Darkness Moves",
+    title: "The Darkness Moves",
 
-    location:
-      "Forbidden Forest",
+    location: "Forbidden Forest",
 
-    symbol:
-      "🌑",
-
+    symbol: "🌑",
 
     speaker: {
-
-      name:
-        "Narrator",
-
-      role:
-        "The Ancient Voice",
-
-      icon:
-        "🌙",
-
-      voice:
-        "guardian",
+      name: "Narrator",
+      role: "The Ancient Voice",
+      icon: "🌙",
+      voice: "guardian"
     },
-
 
     text:
       "The light disappears. For several seconds, you cannot see anything. Then you hear breathing behind you.",
 
-
     choices: [
 
       {
-
-        text:
-          "Turn around.",
-
-        next:
-          "companionArrival",
+        text: "Turn around.",
+        next: "companionArrival"
       },
 
-
       {
-
         text:
           "Run toward the distant light.",
 
-        action:
-          () => {
+        action: () => {
 
-            GameState.player.courage =
-              Math.min(
-                100,
-                GameState.player.courage + 5
-              );
-          },
+          GameState.player.courage =
+            Math.min(
+              100,
+              GameState.player.courage + 5
+            );
+        },
 
         next:
-          "crownClue",
-      },
-
-    ],
+          "crownClue"
+      }
+    ]
   },
 
 
   crownClue: {
 
-    id:
-      "crownClue",
+    id: "crownClue",
 
-    chapter:
-      "CHAPTER THREE",
+    chapter: "CHAPTER THREE",
 
-    title:
-      "The Lost Crown",
+    title: "The Lost Crown",
 
-    location:
-      "Ancient Clearing",
+    location: "Ancient Clearing",
 
-    symbol:
-      "👑",
-
+    symbol: "👑",
 
     speaker: {
-
-      name:
-        "NOVA",
-
-      role:
-        "Dimensional Guide",
-
-      icon:
-        "🤖",
-
-      voice:
-        "robot",
+      name: "NOVA",
+      role: "Dimensional Guide",
+      icon: "🤖",
+      voice: "robot"
     },
-
 
     text:
       "I have discovered something unusual. The Lost Crown is not simply an object. Every realm appears to be hiding one part of its history.",
 
-
     choices: [
 
       {
-
         text:
           "Search for the Crown's first clue.",
 
-        action:
-          () => {
+        action: () => {
 
-            addClue(
-              "Crown Symbol in the Forest"
-            );
+          addClue(
+            "Crown Symbol in the Forest"
+          );
 
-
-            unlockAchievement(
-              "First Mystery Discovered"
-            );
-          },
+          unlockAchievement(
+            "First Mystery Discovered"
+          );
+        },
 
         next:
-          "portalChoice",
+          "portalChoice"
       },
 
-
       {
-
         text:
           "Ask NOVA to open the Dimensional Gateway.",
 
         next:
-          "portalChoice",
-      },
-
-    ],
+          "portalChoice"
+      }
+    ]
   },
 
 
   portalChoice: {
 
-    id:
-      "portalChoice",
+    id: "portalChoice",
 
-    chapter:
-      "CHAPTER FOUR",
+    chapter: "CHAPTER FOUR",
 
-    title:
-      "The Portals Respond",
+    title: "The Portals Respond",
 
-    location:
-      "Crossroads Between Worlds",
+    location: "Crossroads Between Worlds",
 
-    symbol:
-      "🌌",
-
+    symbol: "🌌",
 
     speaker: {
-
-      name:
-        "NOVA",
-
-      role:
-        "Dimensional Guide",
-
-      icon:
-        "🤖",
-
-      voice:
-        "robot",
+      name: "NOVA",
+      role: "Dimensional Guide",
+      icon: "🤖",
+      voice: "robot"
     },
-
 
     text:
       "Four unstable signals are appearing. Each one leads toward another mystery. The decision is yours.",
 
-
     choices: [
 
       {
-
-        text:
-          "Enter the Frozen Mountains.",
-
-        next:
-          "mountainKingdom",
+        text: "Enter the Frozen Mountains.",
+        next: "mountainKingdom"
       },
-
 
       {
-
-        text:
-          "Enter the Forgotten Palace.",
-
-        next:
-          "palaceArrival",
+        text: "Enter the Forgotten Palace.",
+        next: "palaceArrival"
       },
-
 
       {
-
-        text:
-          "Enter the Witch Territory.",
-
-        next:
-          "witchEncounter",
+        text: "Enter the Witch Territory.",
+        next: "witchEncounter"
       },
-
 
       {
-
-        text:
-          "Enter the Dream Realm.",
-
-        next:
-          "dreamRealm",
-      },
-
-    ],
+        text: "Enter the Dream Realm.",
+        next: "dreamRealm"
+      }
+    ]
   },
 
 
   mountainKingdom: {
 
-    id:
-      "mountainKingdom",
+    id: "mountainKingdom",
 
-    chapter:
-      "CHAPTER FIVE",
+    chapter: "CHAPTER FIVE",
 
-    title:
-      "The Crystal Kingdom",
+    title: "The Crystal Kingdom",
 
-    location:
-      "Frozen Mountains",
+    location: "Frozen Mountains",
 
-    symbol:
-      "❄️",
-
+    symbol: "❄️",
 
     speaker: {
-
-      name:
-        "Queen Aurelia",
-
-      role:
-        "Guardian of the Crystal Kingdom",
-
-      icon:
-        "👑",
-
-      voice:
-        "queen",
+      name: "Queen Aurelia",
+      role: "Guardian of the Crystal Kingdom",
+      icon: "👑",
+      voice: "queen"
     },
 
-
     text:
-      "Welcome, traveler. The mountains have carried your name long before you arrived. But before you enter my kingdom, you must tell me what you are searching for.",
-
+      "Welcome, traveler. The mountains have carried your name long before you arrived. Before entering my kingdom, tell me what you seek.",
 
     choices: [
 
       {
-
         text:
           "Tell the Queen about the Lost Crown.",
 
-        action:
-          () => {
+        action: () => {
 
-            addClue(
-              "The Queen Knows About the Crown"
-            );
+          addClue(
+            "The Queen Knows About the Crown"
+          );
 
-
-            unlockAchievement(
-              "Entered the Crystal Kingdom"
-            );
-          },
+          unlockAchievement(
+            "Entered the Crystal Kingdom"
+          );
+        },
 
         next:
-          "royalDecision",
+          "royalDecision"
       },
 
-
       {
-
         text:
           "Say that you do not yet know whom to trust.",
 
         next:
-          "royalDecision",
-      },
-
-    ],
+          "royalDecision"
+      }
+    ]
   },
 
 
   palaceArrival: {
 
-    id:
-      "palaceArrival",
+    id: "palaceArrival",
 
-    chapter:
-      "CHAPTER FIVE",
+    chapter: "CHAPTER FIVE",
 
-    title:
-      "The Palace That Remembers",
+    title: "The Palace That Remembers",
 
-    location:
-      "Forgotten Palace",
+    location: "Forgotten Palace",
 
-    symbol:
-      "🏰",
-
+    symbol: "🏰",
 
     speaker: {
-
-      name:
-        "The Palace",
-
-      role:
-        "Living Architecture",
-
-      icon:
-        "🏰",
-
-      voice:
-        "ghost",
+      name: "The Palace",
+      role: "Living Architecture",
+      icon: "🏰",
+      voice: "ghost"
     },
-
 
     text:
       "The palace doors open without anyone touching them. Inside, hundreds of portraits turn toward you at the same time.",
 
-
     choices: [
 
       {
-
         text:
           "Inspect the portraits.",
 
-        action:
-          () => {
+        action: () => {
 
-            addClue(
-              "A Portrait Wearing Your Outfit"
-            );
+          addClue(
+            "A Portrait Wearing Your Outfit"
+          );
 
-
-            addItem(
-              "🪞",
-              "Living Mirror Fragment",
-              "A fragment that reflects memories instead of faces."
-            );
-          },
+          addItem(
+            "🪞",
+            "Living Mirror Fragment",
+            "A fragment that reflects memories instead of faces."
+          );
+        },
 
         next:
-          "royalDecision",
+          "royalDecision"
       },
 
-
       {
-
         text:
           "Search for the royal dining hall.",
 
         next:
-          "royalDecision",
-      },
-
-    ],
+          "royalDecision"
+      }
+    ]
   },
 
 
   witchEncounter: {
 
-    id:
-      "witchEncounter",
+    id: "witchEncounter",
 
-    chapter:
-      "CHAPTER FIVE",
+    chapter: "CHAPTER FIVE",
 
-    title:
-      "The Witch's Warning",
+    title: "The Witch's Warning",
 
-    location:
-      "Witch Territory",
+    location: "Witch Territory",
 
-    symbol:
-      "🧙",
-
+    symbol: "🧙",
 
     speaker: {
-
-      name:
-        "MORVA",
-
-      role:
-        "Keeper of Forbidden Knowledge",
-
-      icon:
-        "🧙",
-
-      voice:
-        "witch",
+      name: "MORVA",
+      role: "Keeper of Forbidden Knowledge",
+      icon: "🧙",
+      voice: "witch"
     },
 
-
     text:
-      "You seek the Crown, yet you do not understand what it will awaken. Take my warning, traveler. Some mysteries were hidden for a reason.",
-
+      "You seek the Crown, yet you do not understand what it will awaken. Some mysteries were hidden for a reason.",
 
     choices: [
 
       {
-
         text:
           "Ask what the Crown will awaken.",
 
-        action:
-          () => {
+        action: () => {
 
-            addClue(
-              "The Crown Can Awaken Something Ancient"
-            );
-          },
+          addClue(
+            "The Crown Can Awaken Something Ancient"
+          );
+        },
 
         next:
-          "royalDecision",
+          "royalDecision"
       },
 
-
       {
-
         text:
           "Refuse to trust the Witch.",
 
-        action:
-          () => {
+        action: () => {
 
-            GameState.player.courage =
-              Math.min(
-                100,
-                GameState.player.courage + 10
-              );
-          },
-
-        next:
-          "royalDecision",
-      },
-
-    ],
-  },
-
-
-  dreamRealm: {
-
-    id:
-      "dreamRealm",
-
-    chapter:
-      "CHAPTER FIVE",
-
-    title:
-      "A World That Should Not Exist",
-
-    location:
-      "Dream Realm",
-
-    symbol:
-      "🌠",
-
-
-    speaker: {
-
-      name:
-        "LYRA",
-
-      role:
-        "Fairy of Forgotten Paths",
-
-      icon:
-        "🧚",
-
-      voice:
-        "fairy",
-    },
-
-
-    text:
-      "You are dreaming, but the choices you make here will follow you when you wake. That is why you must be careful.",
-
-
-    choices: [
-
-      {
-
-        text:
-          "Ask LYRA to guide you.",
-
-        action:
-          () => {
-
-            setCompanion({
-
-              name:
-                "LYRA",
-
-              description:
-                "A gentle fairy who reveals hidden paths and magical clues.",
-
-              type:
-                "fairy",
-            });
-
-
-            GameState.player.magic =
-              Math.min(
-                100,
-                GameState.player.magic + 20
-              );
-
-
-            updateHUD();
-          },
+          GameState.player.courage =
+            Math.min(
+              100,
+              GameState.player.courage + 10
+            );
+        },
 
         next:
-          "royalDecision",
-      },
-
-
-      {
-
-        text:
-          "Explore the dream alone.",
-
-        next:
-          "royalDecision",
-      },
-
-    ],
+          "royalDecision"
+      }
+    ]
   },
 
 
   royalDecision: {
 
-    id:
-      "royalDecision",
+    id: "royalDecision",
 
-    chapter:
-      "CHAPTER SIX",
+    chapter: "CHAPTER SIX",
 
-    title:
-      "The Truth Approaches",
+    title: "The Truth Approaches",
 
-    location:
-      "The Royal Crossroads",
+    location: "The Royal Crossroads",
 
-    symbol:
-      "👑",
-
+    symbol: "👑",
 
     speaker: {
-
-      name:
-        "Narrator",
-
-      role:
-        "The Ancient Voice",
-
-      icon:
-        "🌙",
-
-      voice:
-        "guardian",
+      name: "Narrator",
+      role: "The Ancient Voice",
+      icon: "🌙",
+      voice: "guardian"
     },
 
-
     text:
-      "Every clue is beginning to connect. The Crown is calling, the kingdoms are watching, and someone among those who helped you may still be hiding the truth.",
-
+      "Every clue is beginning to connect. The Crown is calling, the kingdoms are watching, and someone who helped you may still be hiding the truth.",
 
     choices: [
 
       {
-
         text:
-          "Trust your companion and continue the journey.",
+          "Trust your companion and continue.",
 
-        action:
-          () => {
+        action: () => {
 
-            GameState.companionTrust +=
-              20;
+          GameState.companionTrust += 20;
 
-
-            unlockAchievement(
-              "Trust Is a Choice"
-            );
-          },
+          unlockAchievement(
+            "Trust Is a Choice"
+          );
+        },
 
         next:
-          "finalMystery",
+          "finalMystery"
       },
 
-
       {
-
         text:
           "Continue alone and trust nobody.",
 
-        action:
-          () => {
+        action: () => {
 
-            GameState.companionTrust -=
-              20;
+          GameState.companionTrust -= 20;
 
-
-            GameState.player.courage =
-              Math.min(
-                100,
-                GameState.player.courage + 10
-              );
-          },
+          GameState.player.courage =
+            Math.min(
+              100,
+              GameState.player.courage + 10
+            );
+        },
 
         next:
-          "finalMystery",
-      },
-
-    ],
+          "finalMystery"
+      }
+    ]
   },
 
 
   finalMystery: {
 
-    id:
-      "finalMystery",
+    id: "finalMystery",
 
-    chapter:
-      "CHAPTER SEVEN",
+    chapter: "CHAPTER SEVEN",
 
-    title:
-      "The Crown Awakens",
+    title: "The Crown Awakens",
 
-    location:
-      "The Hidden Throne",
+    location: "The Hidden Throne",
 
-    symbol:
-      "👑",
-
+    symbol: "👑",
 
     speaker: {
-
-      name:
-        "The Crown",
-
-      role:
-        "An Ancient Power",
-
-      icon:
-        "👑",
-
-      voice:
-        "guardian",
+      name: "The Crown",
+      role: "An Ancient Power",
+      icon: "👑",
+      voice: "guardian"
     },
 
-
     text:
-      "At last, you have reached the truth. The Crown was never waiting for a ruler. It was waiting for someone capable of choosing what kind of world should exist after it awakens.",
-
+      "At last, you have reached the truth. The Crown was never waiting for a ruler. It was waiting for someone capable of choosing what kind of world should exist.",
 
     choices: [
 
       {
-
         text:
           "Protect the kingdoms.",
 
-        action:
-          () => {
+        action: () => {
 
-            unlockAchievement(
-              "Guardian of the Realms"
-            );
+          unlockAchievement(
+            "Guardian of the Realms"
+          );
 
-
-            showEnding(
-              "THE GUARDIAN ENDING",
-              "You choose to protect the kingdoms. The Crown recognizes your courage and the portals begin to close peacefully."
-            );
-          },
+          showEnding(
+            "THE GUARDIAN ENDING",
+            "You choose to protect the kingdoms. The Crown recognizes your courage and the portals begin to close peacefully."
+          );
+        }
       },
 
-
       {
-
         text:
           "Discover the Crown's full power.",
 
-        action:
-          () => {
+        action: () => {
 
-            unlockAchievement(
-              "The Forbidden Choice"
-            );
+          unlockAchievement(
+            "The Forbidden Choice"
+          );
 
-
-            showEnding(
-              "THE MYSTERY ENDING",
-              "You reach toward the Crown's hidden power. The world fades into silence, and somewhere beyond the throne, another door opens."
-            );
-          },
-      },
-
-    ],
-  },
+          showEnding(
+            "THE MYSTERY ENDING",
+            "You reach toward the Crown's hidden power. The world fades into silence, and somewhere beyond the throne, another door opens."
+          );
+        }
+      }
+    ]
+  }
 };
 
 
-/* ========================================= */
-/* ENDING */
-/* ========================================= */
+/* =========================================================
+   ENDING
+========================================================= */
 
 function showEnding(title, text) {
 
-  speak(
-    text,
-    "guardian"
-  );
+  speak(text, "guardian");
 
+  if (sceneTitle) {
+    sceneTitle.textContent = title;
+  }
 
-  sceneTitle.textContent =
-    title;
+  if (chapterLabel) {
+    chapterLabel.textContent =
+      "YOUR DESTINY";
+  }
 
+  if (speakerName) {
+    speakerName.textContent =
+      "Mystic Realms";
+  }
 
-  chapterLabel.textContent =
-    "YOUR DESTINY";
+  if (speakerRole) {
+    speakerRole.textContent =
+      "Journey Complete... For Now";
+  }
 
+  if (speakerIcon) {
+    speakerIcon.textContent = "✨";
+  }
 
-  speakerName.textContent =
-    "Mystic Realms";
+  if (dialogueText) {
+    dialogueText.textContent = text;
+  }
 
+  if (choicesContainer) {
 
-  speakerRole.textContent =
-    "Journey Complete... For Now";
+    choicesContainer.innerHTML = "";
 
+    const restartButton =
+      document.createElement("button");
 
-  speakerIcon.textContent =
-    "✨";
+    restartButton.className =
+      "primary-btn";
 
+    restartButton.textContent =
+      "Begin Another Journey";
 
-  dialogueText.textContent =
-    text;
+    restartButton.addEventListener(
+      "click",
+      () => {
 
+        localStorage.removeItem(
+          "mysticRealmsSave"
+        );
 
-  choicesContainer.innerHTML = "";
+        location.reload();
+      }
+    );
 
+    choicesContainer.appendChild(
+      restartButton
+    );
+  }
 
-  const restartButton =
-    document.createElement("button");
-
-
-  restartButton.className =
-    "primary-btn";
-
-
-  restartButton.textContent =
-    "Begin Another Journey";
-
-
-  restartButton.addEventListener(
-    "click",
-    () => {
-
-      localStorage.removeItem(
-        "mysticRealmsSave"
-      );
-
-
-      location.reload();
-    }
-  );
-
-
-  choicesContainer.appendChild(
-    restartButton
-  );
-
-
-  GameState.player.location =
-    title;
-
+  GameState.player.location = title;
 
   updateHUD();
-
 
   saveGame();
 }
 
 
-/* ========================================= */
-/* MODALS */
-/* ========================================= */
+/* =========================================================
+   MODAL PANELS
+========================================================= */
 
 function openPanel(panel) {
+
+  if (!modal || !modalTitle || !modalBody) {
+    return;
+  }
 
   modal.classList.add("show");
 
@@ -1680,33 +1225,21 @@ function openPanel(panel) {
     modalTitle.textContent =
       "🎒 Mystical Inventory";
 
-
-    if (
-      GameState.inventory.length === 0
-    ) {
-
-      modalBody.innerHTML =
-        "<p>Your inventory is empty.</p>";
-
-      return;
-    }
-
-
     modalBody.innerHTML =
-      GameState.inventory
-        .map(
-          (item) => `
-            <div class="item-row">
-              <strong>
-                ${item.icon} ${item.name}
-              </strong>
-              <p>
-                ${item.description}
-              </p>
-            </div>
-          `
-        )
-        .join("");
+      GameState.inventory.length
+        ? GameState.inventory
+            .map(
+              (item) => `
+                <div class="item-row">
+                  <strong>
+                    ${item.icon} ${item.name}
+                  </strong>
+                  <p>${item.description}</p>
+                </div>
+              `
+            )
+            .join("")
+        : "<p>Your inventory is empty.</p>";
   }
 
 
@@ -1714,7 +1247,6 @@ function openPanel(panel) {
 
     modalTitle.textContent =
       "📖 Mystery Journal";
-
 
     modalBody.innerHTML =
       GameState.clues.length
@@ -1736,37 +1268,29 @@ function openPanel(panel) {
     modalTitle.textContent =
       "🤖 Companion System";
 
+    modalBody.innerHTML =
+      GameState.companion
+        ? `
+          <div class="item-row">
+            <strong>
+              ${GameState.companion.name}
+            </strong>
 
-    if (!GameState.companion) {
+            <p>
+              ${GameState.companion.description}
+            </p>
 
-      modalBody.innerHTML =
+            <p>
+              Trust Level:
+              ${GameState.companionTrust}%
+            </p>
+          </div>
         `
-        <p>
-          You are currently travelling alone.
-        </p>
-        `;
-    }
-
-    else {
-
-      modalBody.innerHTML =
-        `
-        <div class="item-row">
-          <strong>
-            ${GameState.companion.name}
-          </strong>
-
+        : `
           <p>
-            ${GameState.companion.description}
+            You are currently travelling alone.
           </p>
-
-          <p>
-            Trust Level:
-            ${GameState.companionTrust}%
-          </p>
-        </div>
         `;
-    }
   }
 
 
@@ -1774,7 +1298,6 @@ function openPanel(panel) {
 
     modalTitle.textContent =
       "🏆 Achievements";
-
 
     modalBody.innerHTML =
       GameState.achievements.length
@@ -1792,83 +1315,94 @@ function openPanel(panel) {
 }
 
 
-/* ========================================= */
-/* SAVE SYSTEM */
-/* ========================================= */
+/* =========================================================
+   SAVE GAME
+========================================================= */
 
 function saveGame() {
 
-  const saveData = {
+  try {
 
-    state:
-      GameState,
+    localStorage.setItem(
+      "mysticRealmsSave",
+      JSON.stringify(GameState)
+    );
 
-  };
+    showEvent(
+      "💾 Journey saved successfully."
+    );
 
+  } catch (error) {
 
-  localStorage.setItem(
-    "mysticRealmsSave",
-    JSON.stringify(saveData)
-  );
+    console.error(error);
 
-
-  showEvent(
-    "💾 Journey saved successfully."
-  );
+    showEvent(
+      "⚠️ Unable to save the journey."
+    );
+  }
 }
 
+
+/* =========================================================
+   LOAD GAME
+========================================================= */
 
 function loadGame() {
 
-  const saved =
-    localStorage.getItem(
-      "mysticRealmsSave"
+  try {
+
+    const saved =
+      localStorage.getItem(
+        "mysticRealmsSave"
+      );
+
+    if (!saved) {
+
+      showEvent(
+        "No saved journey was found."
+      );
+
+      return;
+    }
+
+    const savedState =
+      JSON.parse(saved);
+
+    Object.assign(
+      GameState,
+      savedState
     );
 
+    showScreen("game");
 
-  if (!saved) {
+    updateHUD();
 
-    alert(
-      "No saved journey was found."
-    );
+    if (
+      GameState.currentScene &&
+      Scenes[GameState.currentScene]
+    ) {
 
-    return;
-  }
+      loadScene(
+        Scenes[
+          GameState.currentScene
+        ]
+      );
+    }
 
+  } catch (error) {
 
-  const data =
-    JSON.parse(saved);
+    console.error(error);
 
-
-  Object.assign(
-    GameState,
-    data.state
-  );
-
-
-  showScreen("game");
-
-
-  updateHUD();
-
-
-  if (
-    GameState.currentScene &&
-    Scenes[GameState.currentScene]
-  ) {
-
-    loadScene(
-      Scenes[
-        GameState.currentScene
-      ]
+    showEvent(
+      "⚠️ Saved journey could not be loaded."
     );
   }
 }
 
 
-/* ========================================= */
-/* CHARACTER SELECTION */
-/* ========================================= */
+/* =========================================================
+   CHARACTER SELECTION
+========================================================= */
 
 document
   .querySelectorAll(".character-card")
@@ -1879,15 +1413,19 @@ document
       () => {
 
         document
-          .querySelectorAll(".character-card")
-          .forEach(
-            (item) =>
-              item.classList.remove("selected")
-          );
+          .querySelectorAll(
+            ".character-card"
+          )
+          .forEach((item) => {
 
+            item.classList.remove(
+              "selected"
+            );
+          });
 
-        card.classList.add("selected");
-
+        card.classList.add(
+          "selected"
+        );
 
         GameState.player.character =
           card.dataset.character;
@@ -1895,6 +1433,10 @@ document
     );
   });
 
+
+/* =========================================================
+   OUTFIT SELECTION
+========================================================= */
 
 document
   .querySelectorAll(".outfit-card")
@@ -1905,15 +1447,19 @@ document
       () => {
 
         document
-          .querySelectorAll(".outfit-card")
-          .forEach(
-            (item) =>
-              item.classList.remove("selected")
-          );
+          .querySelectorAll(
+            ".outfit-card"
+          )
+          .forEach((item) => {
 
+            item.classList.remove(
+              "selected"
+            );
+          });
 
-        card.classList.add("selected");
-
+        card.classList.add(
+          "selected"
+        );
 
         GameState.player.outfit =
           card.dataset.outfit;
@@ -1922,51 +1468,74 @@ document
   });
 
 
-/* ========================================= */
-/* BUTTON EVENTS */
-/* ========================================= */
+/* =========================================================
+   NEW GAME BUTTON
+========================================================= */
 
-document
-  .getElementById("newGameBtn")
-  .addEventListener(
+const newGameBtn =
+  getElement("newGameBtn");
+
+if (newGameBtn) {
+
+  newGameBtn.addEventListener(
     "click",
     () => {
 
       showScreen("character");
     }
   );
+}
 
 
-document
-  .getElementById("continueBtn")
-  .addEventListener(
+/* =========================================================
+   CONTINUE GAME BUTTON
+========================================================= */
+
+const continueBtn =
+  getElement("continueBtn");
+
+if (continueBtn) {
+
+  continueBtn.addEventListener(
     "click",
     () => {
 
       loadGame();
     }
   );
+}
 
 
-document
-  .getElementById("continueWorldBtn")
-  .addEventListener(
+/* =========================================================
+   CONTINUE TO WORLDS
+========================================================= */
+
+const continueWorldBtn =
+  getElement("continueWorldBtn");
+
+if (continueWorldBtn) {
+
+  continueWorldBtn.addEventListener(
     "click",
     () => {
 
       const name =
-        playerNameInput.value.trim();
-
+        playerNameInput
+          ? playerNameInput.value.trim()
+          : "";
 
       GameState.player.name =
-        name ||
-        "Adventurer";
-
+        name || "Adventurer";
 
       showScreen("world");
     }
   );
+}
 
+
+/* =========================================================
+   WORLD SELECTION
+========================================================= */
 
 document
   .querySelectorAll(".world-card")
@@ -1979,9 +1548,11 @@ document
         const world =
           card.dataset.world;
 
-
         showScreen("game");
 
+        unlockAchievement(
+          "Entered a New Realm"
+        );
 
         if (world === "forest") {
 
@@ -1990,14 +1561,12 @@ document
           );
         }
 
-
         else if (world === "ruins") {
 
           loadScene(
             Scenes.palaceArrival
           );
         }
-
 
         else if (world === "desert") {
 
@@ -2006,58 +1575,72 @@ document
           );
         }
 
-
         else if (world === "mountains") {
 
           loadScene(
             Scenes.mountainKingdom
           );
         }
-
-
-        unlockAchievement(
-          "Entered a New Realm"
-        );
       }
     );
   });
 
 
-document
-  .getElementById("voiceBtn")
-  .addEventListener(
+/* =========================================================
+   VOICE BUTTON
+========================================================= */
+
+const voiceBtn =
+  getElement("voiceBtn");
+
+if (voiceBtn) {
+
+  voiceBtn.addEventListener(
     "click",
     () => {
 
       GameState.voiceEnabled =
         !GameState.voiceEnabled;
 
-
-      document
-        .getElementById("voiceBtn")
-        .textContent =
+      voiceBtn.textContent =
         GameState.voiceEnabled
           ? "🔊"
           : "🔇";
 
+      if (!GameState.voiceEnabled) {
 
-      if (
-        !GameState.voiceEnabled
-      ) {
-
-        window.speechSynthesis.cancel();
+        if (
+          "speechSynthesis" in window
+        ) {
+          window
+            .speechSynthesis
+            .cancel();
+        }
       }
     }
   );
+}
 
 
-document
-  .getElementById("saveBtn")
-  .addEventListener(
+/* =========================================================
+   SAVE BUTTON
+========================================================= */
+
+const saveBtn =
+  getElement("saveBtn");
+
+if (saveBtn) {
+
+  saveBtn.addEventListener(
     "click",
     saveGame
   );
+}
 
+
+/* =========================================================
+   HUD PANEL BUTTONS
+========================================================= */
 
 document
   .querySelectorAll(".hud-menu-btn")
@@ -2075,35 +1658,55 @@ document
   });
 
 
-document
-  .getElementById("closeModal")
-  .addEventListener(
+/* =========================================================
+   CLOSE MODAL
+========================================================= */
+
+const closeModal =
+  getElement("closeModal");
+
+if (closeModal) {
+
+  closeModal.addEventListener(
     "click",
     () => {
 
-      modal.classList.remove("show");
+      if (modal) {
+        modal.classList.remove("show");
+      }
     }
   );
+}
 
 
-modal.addEventListener(
-  "click",
-  (event) => {
+if (modal) {
 
-    if (
-      event.target === modal
-    ) {
+  modal.addEventListener(
+    "click",
+    (event) => {
 
-      modal.classList.remove("show");
+      if (event.target === modal) {
+        modal.classList.remove("show");
+      }
     }
+  );
+}
+
+
+/* =========================================================
+   INITIALIZE GAME
+========================================================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+
+    createParticles();
+
+    updateHUD();
+
+    console.log(
+      "Mystic Realms Game Engine Loaded Successfully!"
+    );
   }
 );
-
-
-/* ========================================= */
-/* INITIALIZE */
-/* ========================================= */
-
-createParticles();
-
-updateHUD();
