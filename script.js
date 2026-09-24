@@ -24,7 +24,10 @@ document.addEventListener("DOMContentLoaded", () => {
     companion: null,
     companionTrust: 50,
     currentScene: null,
-    voiceEnabled: true
+    voiceEnabled: true,
+
+    // Stores the completed ending, if any
+    ending: null
   };
 
 
@@ -113,6 +116,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   /* =========================================
+     TIMERS
+  ========================================= */
+
+  let eventTimer = null;
+  let achievementTimer = null;
+
+
+  /* =========================================
      SCREEN NAVIGATION
   ========================================= */
 
@@ -179,6 +190,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!("speechSynthesis" in window)) return;
 
+    if (!text) return;
+
     window.speechSynthesis.cancel();
 
     const speech =
@@ -239,20 +252,57 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   /* =========================================
+     UPDATE CHARACTER SELECTION UI
+  ========================================= */
+
+  function updateCharacterSelectionUI() {
+
+    document
+      .querySelectorAll(".character-card")
+      .forEach((card) => {
+
+        card.classList.toggle(
+          "selected",
+          card.dataset.character ===
+            GameState.player.character
+        );
+
+      });
+
+
+    document
+      .querySelectorAll(".outfit-card")
+      .forEach((card) => {
+
+        card.classList.toggle(
+          "selected",
+          card.dataset.outfit ===
+            GameState.player.outfit
+        );
+
+      });
+  }
+
+
+  /* =========================================
      UPDATE HUD
   ========================================= */
 
   function updateHUD() {
 
     if (hudPlayerName) {
+
       hudPlayerName.textContent =
         GameState.player.name;
     }
 
+
     if (hudLocation) {
+
       hudLocation.textContent =
         GameState.player.location;
     }
+
 
     if (playerAvatar) {
 
@@ -262,35 +312,45 @@ document.addEventListener("DOMContentLoaded", () => {
           : "🤴";
     }
 
+
     if (courageBar) {
 
       const courage =
         Math.max(
           0,
-          Math.min(100, GameState.player.courage)
+          Math.min(
+            100,
+            Number(GameState.player.courage) || 0
+          )
         );
 
       courageBar.style.width =
         courage + "%";
     }
 
+
     if (magicBar) {
 
       const magic =
         Math.max(
           0,
-          Math.min(100, GameState.player.magic)
+          Math.min(
+            100,
+            Number(GameState.player.magic) || 0
+          )
         );
 
       magicBar.style.width =
         magic + "%";
     }
 
+
     if (mysteryProgress) {
 
       mysteryProgress.textContent =
         Clues discovered: ${GameState.clues.length};
     }
+
 
     if (GameState.companion) {
 
@@ -309,7 +369,9 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
 
       if (activeCompanion) {
-        activeCompanion.textContent = "None";
+
+        activeCompanion.textContent =
+          "None";
       }
 
       if (companionStatus) {
@@ -319,7 +381,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+
     updateVoiceButton();
+    updateCharacterSelectionUI();
   }
 
 
@@ -333,9 +397,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     eventMessage.textContent = message;
 
-    setTimeout(() => {
 
-      if (eventMessage.textContent === message) {
+    if (eventTimer) {
+      clearTimeout(eventTimer);
+    }
+
+
+    eventTimer = setTimeout(() => {
+
+      if (eventMessage) {
         eventMessage.textContent = "";
       }
 
@@ -356,15 +426,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (exists) return;
 
+
     GameState.inventory.push({
       icon,
       name,
       description
     });
 
+
     showEvent(
       ${icon} Added to inventory: ${name}
     );
+
 
     updateHUD();
   }
@@ -401,22 +474,37 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+
     GameState.achievements.push(name);
 
+
     if (achievementText) {
-      achievementText.textContent = name;
+
+      achievementText.textContent =
+        name;
     }
+
 
     if (achievementToast) {
 
       achievementToast.classList.add("show");
 
-      setTimeout(() => {
 
-        achievementToast.classList.remove("show");
+      if (achievementTimer) {
+        clearTimeout(achievementTimer);
+      }
 
-      }, 4500);
+
+      achievementTimer =
+        setTimeout(() => {
+
+          achievementToast.classList.remove(
+            "show"
+          );
+
+        }, 4500);
     }
+
 
     updateHUD();
   }
@@ -428,9 +516,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function setCompanion(companion) {
 
-    GameState.companion = companion;
+    if (!companion) return;
+
+    GameState.companion =
+      companion;
+
 
     updateHUD();
+
 
     unlockAchievement(
       Companion Joined: ${companion.name}
@@ -444,7 +537,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function randomEvent() {
 
-    const chance = Math.random();
+    const chance =
+      Math.random();
+
 
     if (chance < 0.20) {
 
@@ -453,6 +548,7 @@ document.addEventListener("DOMContentLoaded", () => {
           100,
           GameState.player.magic + 5
         );
+
 
       showEvent(
         "✨ Mysterious energy increases your magic."
@@ -467,10 +563,12 @@ document.addEventListener("DOMContentLoaded", () => {
           GameState.player.courage - 5
         );
 
+
       showEvent(
         "🌫️ Something moves in the darkness..."
       );
     }
+
 
     updateHUD();
   }
@@ -487,10 +585,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!scene) return;
 
+
     const {
       triggerRandomEvent = true,
       speakDialogue = true
     } = options;
+
 
     GameState.currentScene =
       scene.id;
@@ -498,8 +598,13 @@ document.addEventListener("DOMContentLoaded", () => {
     GameState.player.location =
       scene.location;
 
+    // A normal scene means there is no completed ending
+    GameState.ending = null;
 
-    /* Scene information */
+
+    /* =====================================
+       SCENE INFORMATION
+    ===================================== */
 
     if (chapterLabel) {
 
@@ -507,11 +612,13 @@ document.addEventListener("DOMContentLoaded", () => {
         scene.chapter;
     }
 
+
     if (sceneTitle) {
 
       sceneTitle.textContent =
         scene.title;
     }
+
 
     if (worldSymbol) {
 
@@ -520,7 +627,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    /* Speaker information */
+    /* =====================================
+       SPEAKER INFORMATION
+    ===================================== */
 
     if (speakerName) {
 
@@ -528,11 +637,13 @@ document.addEventListener("DOMContentLoaded", () => {
         scene.speaker.name;
     }
 
+
     if (speakerRole) {
 
       speakerRole.textContent =
         scene.speaker.role;
     }
+
 
     if (speakerIcon) {
 
@@ -541,7 +652,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    /* Dialogue */
+    /* =====================================
+       DIALOGUE
+    ===================================== */
 
     if (dialogueText) {
 
@@ -550,11 +663,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    /* Choices */
+    /* =====================================
+       CHOICES
+    ===================================== */
 
     if (choicesContainer) {
 
       choicesContainer.innerHTML = "";
+
 
       if (
         Array.isArray(scene.choices) &&
@@ -566,21 +682,44 @@ document.addEventListener("DOMContentLoaded", () => {
           const button =
             document.createElement("button");
 
+
           button.className =
             "choice-btn";
 
-          button.type = "button";
+
+          button.type =
+            "button";
+
 
           button.textContent =
             choice.text;
+
 
           button.addEventListener(
             "click",
             () => {
 
+              // Prevent accidental double-clicks
+              const allChoiceButtons =
+                choicesContainer.querySelectorAll(
+                  "button"
+                );
+
+
+              allChoiceButtons.forEach(
+                (btn) => {
+                  btn.disabled = true;
+                }
+              );
+
+
               /* Run choice action */
 
-              if (typeof choice.action === "function") {
+              if (
+                typeof choice.action ===
+                "function"
+              ) {
+
                 choice.action();
               }
 
@@ -600,9 +739,11 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           );
 
+
           choicesContainer.appendChild(
             button
           );
+
         });
       }
     }
@@ -611,7 +752,9 @@ document.addEventListener("DOMContentLoaded", () => {
     updateHUD();
 
 
-    /* Speak only when requested */
+    /* =====================================
+       VOICE
+    ===================================== */
 
     if (speakDialogue) {
 
@@ -622,9 +765,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    /* Random events are disabled when loading a save */
+    /* =====================================
+       RANDOM EVENT
+    ===================================== */
 
     if (triggerRandomEvent) {
+
       randomEvent();
     }
   }
@@ -673,7 +819,6 @@ document.addEventListener("DOMContentLoaded", () => {
         },
 
         {
-
           text:
             "Search the ground for clues.",
 
@@ -693,9 +838,14 @@ document.addEventListener("DOMContentLoaded", () => {
           next:
             "forestWhisper"
         }
+
       ]
     },
 
+
+    /* =====================================
+       FOREST WHISPER
+    ===================================== */
 
     forestWhisper: {
 
@@ -730,7 +880,6 @@ document.addEventListener("DOMContentLoaded", () => {
         },
 
         {
-
           text:
             "Ignore the voice and continue.",
 
@@ -748,9 +897,14 @@ document.addEventListener("DOMContentLoaded", () => {
           next:
             "darkForest"
         }
+
       ]
     },
 
+
+    /* =====================================
+       COMPANION ARRIVAL
+    ===================================== */
 
     companionArrival: {
 
@@ -790,17 +944,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 "A dimensional guide carrying mysterious gadgets."
             });
 
+
             addItem(
               "🚪",
               "Dimensional Gateway",
               "A device capable of opening portals."
             );
 
+
             addItem(
               "🔦",
               "Adaptive Light",
               "Reveals hidden symbols."
             );
+
           },
 
           next:
@@ -808,13 +965,13 @@ document.addEventListener("DOMContentLoaded", () => {
         },
 
         {
-
           text:
             "Tell NOVA you do not trust anyone yet.",
 
           action: () => {
 
-            GameState.companionTrust = 30;
+            GameState.companionTrust =
+              30;
 
             updateHUD();
           },
@@ -822,9 +979,14 @@ document.addEventListener("DOMContentLoaded", () => {
           next:
             "crownClue"
         }
+
       ]
     },
 
+
+    /* =====================================
+       DARK FOREST
+    ===================================== */
 
     darkForest: {
 
@@ -859,7 +1021,6 @@ document.addEventListener("DOMContentLoaded", () => {
         },
 
         {
-
           text:
             "Run toward the distant light.",
 
@@ -877,12 +1038,13 @@ document.addEventListener("DOMContentLoaded", () => {
           next:
             "crownClue"
         }
+
       ]
     },
 
 
     /* =====================================
-       CROWN
+       CROWN CLUE
     ===================================== */
 
     crownClue: {
@@ -910,7 +1072,6 @@ document.addEventListener("DOMContentLoaded", () => {
       choices: [
 
         {
-
           text:
             "Search for the Crown's first clue.",
 
@@ -930,13 +1091,13 @@ document.addEventListener("DOMContentLoaded", () => {
         },
 
         {
-
           text:
             "Ask NOVA to open the Dimensional Gateway.",
 
           next:
             "portalChoice"
         }
+
       ]
     },
 
@@ -1000,6 +1161,7 @@ document.addEventListener("DOMContentLoaded", () => {
           next:
             "dreamRealm"
         }
+
       ]
     },
 
@@ -1033,7 +1195,6 @@ document.addEventListener("DOMContentLoaded", () => {
       choices: [
 
         {
-
           text:
             "Tell the Queen about the Lost Crown.",
 
@@ -1053,13 +1214,13 @@ document.addEventListener("DOMContentLoaded", () => {
         },
 
         {
-
           text:
             "Ask the Queen for help.",
 
           next:
             "finalMystery"
         }
+
       ]
     },
 
@@ -1093,7 +1254,6 @@ document.addEventListener("DOMContentLoaded", () => {
       choices: [
 
         {
-
           text:
             "Inspect the portraits.",
 
@@ -1115,13 +1275,13 @@ document.addEventListener("DOMContentLoaded", () => {
         },
 
         {
-
           text:
             "Enter the royal hall.",
 
           next:
             "finalMystery"
         }
+
       ]
     },
 
@@ -1155,7 +1315,6 @@ document.addEventListener("DOMContentLoaded", () => {
       choices: [
 
         {
-
           text:
             "Ask what the Crown will awaken.",
 
@@ -1171,13 +1330,13 @@ document.addEventListener("DOMContentLoaded", () => {
         },
 
         {
-
           text:
             "Refuse to trust the Witch.",
 
           next:
             "finalMystery"
         }
+
       ]
     },
 
@@ -1211,7 +1370,6 @@ document.addEventListener("DOMContentLoaded", () => {
       choices: [
 
         {
-
           text:
             "Ask LYRA to guide you.",
 
@@ -1225,11 +1383,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 "A gentle fairy who reveals hidden paths."
             });
 
+
             GameState.player.magic =
               Math.min(
                 100,
                 GameState.player.magic + 20
               );
+
 
             updateHUD();
           },
@@ -1239,13 +1399,13 @@ document.addEventListener("DOMContentLoaded", () => {
         },
 
         {
-
           text:
             "Explore alone.",
 
           next:
             "finalMystery"
         }
+
       ]
     },
 
@@ -1279,7 +1439,6 @@ document.addEventListener("DOMContentLoaded", () => {
       choices: [
 
         {
-
           text:
             "Protect the kingdoms.",
 
@@ -1288,6 +1447,7 @@ document.addEventListener("DOMContentLoaded", () => {
             unlockAchievement(
               "Guardian of the Realms"
             );
+
 
             showEnding(
               "THE GUARDIAN ENDING",
@@ -1298,7 +1458,6 @@ document.addEventListener("DOMContentLoaded", () => {
         },
 
         {
-
           text:
             "Discover the Crown's full power.",
 
@@ -1308,6 +1467,7 @@ document.addEventListener("DOMContentLoaded", () => {
               "The FORBIDDEN CHOICE"
             );
 
+
             showEnding(
               "THE MYSTERY ENDING",
 
@@ -1315,62 +1475,92 @@ document.addEventListener("DOMContentLoaded", () => {
             );
           }
         }
+
       ]
     }
+
   };
 
 
   /* =========================================
-     ENDING
+     RENDER SAVED ENDING
   ========================================= */
 
-  function showEnding(title, text) {
+  function renderEnding(
+    title,
+    text,
+    saveAfterRender = false
+  ) {
 
     if (sceneTitle) {
-      sceneTitle.textContent = title;
+
+      sceneTitle.textContent =
+        title;
     }
 
+
     if (chapterLabel) {
+
       chapterLabel.textContent =
         "YOUR DESTINY";
     }
 
+
     if (speakerName) {
+
       speakerName.textContent =
         "Mystic Realms";
     }
 
+
     if (speakerRole) {
+
       speakerRole.textContent =
         "Journey Complete";
     }
 
+
     if (speakerIcon) {
-      speakerIcon.textContent = "✨";
+
+      speakerIcon.textContent =
+        "✨";
     }
+
 
     if (worldSymbol) {
-      worldSymbol.textContent = "✨";
+
+      worldSymbol.textContent =
+        "✨";
     }
 
+
     if (dialogueText) {
-      dialogueText.textContent = text;
+
+      dialogueText.textContent =
+        text;
     }
+
 
     if (choicesContainer) {
 
       choicesContainer.innerHTML = "";
 
+
       const restartButton =
         document.createElement("button");
+
 
       restartButton.className =
         "primary-btn";
 
-      restartButton.type = "button";
+
+      restartButton.type =
+        "button";
+
 
       restartButton.textContent =
         "Begin Another Journey";
+
 
       restartButton.addEventListener(
         "click",
@@ -1384,14 +1574,47 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       );
 
+
       choicesContainer.appendChild(
         restartButton
       );
     }
 
-    speak(text, "guardian");
 
-    saveGame(false);
+    if (saveAfterRender) {
+
+      saveGame(false);
+    }
+  }
+
+
+  /* =========================================
+     SHOW ENDING
+  ========================================= */
+
+  function showEnding(title, text) {
+
+    GameState.currentScene =
+      null;
+
+
+    GameState.ending = {
+      title,
+      text
+    };
+
+
+    renderEnding(
+      title,
+      text,
+      true
+    );
+
+
+    speak(
+      text,
+      "guardian"
+    );
   }
 
 
@@ -1401,9 +1624,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function openPanel(panel) {
 
-    if (!modal || !modalTitle || !modalBody) {
+    if (
+      !modal ||
+      !modalTitle ||
+      !modalBody
+    ) {
       return;
     }
+
 
     modal.classList.add("show");
 
@@ -1416,6 +1644,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       modalTitle.textContent =
         "🎒 Mystical Inventory";
+
 
       if (GameState.inventory.length > 0) {
 
@@ -1453,6 +1682,7 @@ document.addEventListener("DOMContentLoaded", () => {
       modalTitle.textContent =
         "📖 Mystery Journal";
 
+
       if (GameState.clues.length > 0) {
 
         modalBody.innerHTML =
@@ -1482,6 +1712,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       modalTitle.textContent =
         "🤖 Companion System";
+
 
       if (GameState.companion) {
 
@@ -1524,7 +1755,10 @@ document.addEventListener("DOMContentLoaded", () => {
       modalTitle.textContent =
         "🏆 Achievements";
 
-      if (GameState.achievements.length > 0) {
+
+      if (
+        GameState.achievements.length > 0
+      ) {
 
         modalBody.innerHTML =
           GameState.achievements
@@ -1559,6 +1793,7 @@ document.addEventListener("DOMContentLoaded", () => {
         JSON.stringify(GameState)
       );
 
+
       if (showMessage) {
 
         showEvent(
@@ -1572,6 +1807,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "Save error:",
         error
       );
+
 
       if (showMessage) {
 
@@ -1594,6 +1830,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "mysticRealmsSave"
       );
 
+
     if (!saved) {
 
       alert(
@@ -1603,13 +1840,26 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+
     try {
 
       const savedState =
         JSON.parse(saved);
 
 
-      /* Restore player */
+      if (
+        !savedState ||
+        typeof savedState !== "object"
+      ) {
+        throw new Error(
+          "Invalid saved game data."
+        );
+      }
+
+
+      /* =====================================
+         RESTORE PLAYER
+      ===================================== */
 
       if (savedState.player) {
 
@@ -1620,56 +1870,117 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
 
-      /* Restore arrays */
+      /* =====================================
+         RESTORE INVENTORY
+      ===================================== */
 
       GameState.inventory =
         Array.isArray(savedState.inventory)
           ? savedState.inventory
           : [];
 
+
+      /* =====================================
+         RESTORE CLUES
+      ===================================== */
+
       GameState.clues =
         Array.isArray(savedState.clues)
           ? savedState.clues
           : [];
 
+
+      /* =====================================
+         RESTORE ACHIEVEMENTS
+      ===================================== */
+
       GameState.achievements =
-        Array.isArray(savedState.achievements)
+        Array.isArray(
+          savedState.achievements
+        )
           ? savedState.achievements
           : [];
 
 
-      /* Restore companion */
+      /* =====================================
+         RESTORE COMPANION
+      ===================================== */
 
       GameState.companion =
         savedState.companion || null;
 
 
-      /* Restore trust */
+      /* =====================================
+         RESTORE TRUST
+      ===================================== */
 
       GameState.companionTrust =
-        typeof savedState.companionTrust === "number"
+        typeof savedState.companionTrust ===
+        "number"
           ? savedState.companionTrust
           : 50;
 
 
-      /* Restore scene */
+      /* =====================================
+         RESTORE CURRENT SCENE
+      ===================================== */
 
       GameState.currentScene =
         savedState.currentScene || null;
 
 
-      /* Restore voice */
+      /* =====================================
+         RESTORE VOICE
+      ===================================== */
 
       GameState.voiceEnabled =
-        typeof savedState.voiceEnabled === "boolean"
+        typeof savedState.voiceEnabled ===
+        "boolean"
           ? savedState.voiceEnabled
           : true;
 
 
+      /* =====================================
+         RESTORE ENDING
+      ===================================== */
+
+      GameState.ending =
+        savedState.ending || null;
+
+
+      /* =====================================
+         SHOW GAME
+      ===================================== */
+
       showScreen("game");
+
 
       updateHUD();
 
+
+      /* =====================================
+         RESTORE ENDING IF COMPLETED
+      ===================================== */
+
+      if (
+        GameState.ending &&
+        GameState.ending.title &&
+        GameState.ending.text
+      ) {
+
+        renderEnding(
+          GameState.ending.title,
+          GameState.ending.text,
+          false
+        );
+
+        return;
+      }
+
+
+      /* =====================================
+         RESTORE CURRENT SCENE
+      ===================================== */
 
       if (
         GameState.currentScene &&
@@ -1696,6 +2007,7 @@ document.addEventListener("DOMContentLoaded", () => {
         error
       );
 
+
       alert(
         "Saved game could not be loaded."
       );
@@ -1716,7 +2028,9 @@ document.addEventListener("DOMContentLoaded", () => {
         () => {
 
           document
-            .querySelectorAll(".character-card")
+            .querySelectorAll(
+              ".character-card"
+            )
             .forEach((item) => {
 
               item.classList.remove(
@@ -1724,12 +2038,15 @@ document.addEventListener("DOMContentLoaded", () => {
               );
             });
 
+
           card.classList.add(
             "selected"
           );
 
+
           GameState.player.character =
             card.dataset.character;
+
 
           updateHUD();
         }
@@ -1750,7 +2067,9 @@ document.addEventListener("DOMContentLoaded", () => {
         () => {
 
           document
-            .querySelectorAll(".outfit-card")
+            .querySelectorAll(
+              ".outfit-card"
+            )
             .forEach((item) => {
 
               item.classList.remove(
@@ -1758,12 +2077,17 @@ document.addEventListener("DOMContentLoaded", () => {
               );
             });
 
+
           card.classList.add(
             "selected"
           );
 
+
           GameState.player.outfit =
             card.dataset.outfit;
+
+
+          updateHUD();
         }
       );
     });
@@ -1774,7 +2098,10 @@ document.addEventListener("DOMContentLoaded", () => {
   ========================================= */
 
   const newGameBtn =
-    document.getElementById("newGameBtn");
+    document.getElementById(
+      "newGameBtn"
+    );
+
 
   if (newGameBtn) {
 
@@ -1785,6 +2112,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log(
           "New Game button clicked"
         );
+
 
         showScreen("character");
       }
@@ -1797,7 +2125,10 @@ document.addEventListener("DOMContentLoaded", () => {
   ========================================= */
 
   const continueBtn =
-    document.getElementById("continueBtn");
+    document.getElementById(
+      "continueBtn"
+    );
+
 
   if (continueBtn) {
 
@@ -1817,6 +2148,7 @@ document.addEventListener("DOMContentLoaded", () => {
       "continueWorldBtn"
     );
 
+
   if (continueWorldBtn) {
 
     continueWorldBtn.addEventListener(
@@ -1828,8 +2160,10 @@ document.addEventListener("DOMContentLoaded", () => {
             ? playerNameInput.value.trim()
             : "";
 
+
         GameState.player.name =
           name || "Adventurer";
+
 
         showScreen("world");
       }
@@ -1851,6 +2185,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           const world =
             card.dataset.world;
+
 
           showScreen("game");
 
@@ -1899,6 +2234,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 Unknown world selected: ${world}
               );
 
+
               showScreen("world");
 
               return;
@@ -1926,7 +2262,9 @@ document.addEventListener("DOMContentLoaded", () => {
         GameState.voiceEnabled =
           !GameState.voiceEnabled;
 
+
         updateVoiceButton();
+
 
         if (
           !GameState.voiceEnabled &&
@@ -1947,13 +2285,17 @@ document.addEventListener("DOMContentLoaded", () => {
   ========================================= */
 
   const saveBtn =
-    document.getElementById("saveBtn");
+    document.getElementById(
+      "saveBtn"
+    );
+
 
   if (saveBtn) {
 
     saveBtn.addEventListener(
       "click",
       () => {
+
         saveGame(true);
       }
     );
@@ -1989,6 +2331,7 @@ document.addEventListener("DOMContentLoaded", () => {
       "closeModal"
     );
 
+
   if (closeModal) {
 
     closeModal.addEventListener(
@@ -2007,7 +2350,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   /* =========================================
-     CLOSE MODAL BY CLICKING OUTSIDE
+     CLOSE MODAL OUTSIDE
   ========================================= */
 
   if (modal) {
@@ -2055,6 +2398,7 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log(
     "Mystic Realms JavaScript Loaded Successfully"
   );
+
 
   createParticles();
 
