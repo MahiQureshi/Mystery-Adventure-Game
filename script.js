@@ -39,39 +39,77 @@ document.addEventListener("DOMContentLoaded", () => {
     game: document.getElementById("gameScreen")
   };
 
-  const playerNameInput = document.getElementById("playerName");
-  const choicesContainer = document.getElementById("choices");
-  const dialogueText = document.getElementById("dialogueText");
-  const speakerName = document.getElementById("speakerName");
-  const speakerRole = document.getElementById("speakerRole");
-  const speakerIcon = document.getElementById("speakerIcon");
-  const sceneTitle = document.getElementById("sceneTitle");
-  const chapterLabel = document.getElementById("chapterLabel");
-  const worldSymbol = document.getElementById("worldSymbol");
+  const playerNameInput =
+    document.getElementById("playerName");
 
-  const hudPlayerName = document.getElementById("hudPlayerName");
-  const hudLocation = document.getElementById("hudLocation");
-  const playerAvatar = document.getElementById("playerAvatar");
+  const choicesContainer =
+    document.getElementById("choices");
 
-  const courageBar = document.getElementById("courageBar");
-  const magicBar = document.getElementById("magicBar");
+  const dialogueText =
+    document.getElementById("dialogueText");
 
-  const mysteryProgress = document.getElementById("mysteryProgress");
+  const speakerName =
+    document.getElementById("speakerName");
 
-  const activeCompanion = document.getElementById("activeCompanion");
-  const companionStatus = document.getElementById("companionStatus");
+  const speakerRole =
+    document.getElementById("speakerRole");
 
-  const eventMessage = document.getElementById("eventMessage");
+  const speakerIcon =
+    document.getElementById("speakerIcon");
 
-  const modal = document.getElementById("modal");
-  const modalTitle = document.getElementById("modalTitle");
-  const modalBody = document.getElementById("modalBody");
+  const sceneTitle =
+    document.getElementById("sceneTitle");
+
+  const chapterLabel =
+    document.getElementById("chapterLabel");
+
+  const worldSymbol =
+    document.getElementById("worldSymbol");
+
+  const hudPlayerName =
+    document.getElementById("hudPlayerName");
+
+  const hudLocation =
+    document.getElementById("hudLocation");
+
+  const playerAvatar =
+    document.getElementById("playerAvatar");
+
+  const courageBar =
+    document.getElementById("courageBar");
+
+  const magicBar =
+    document.getElementById("magicBar");
+
+  const mysteryProgress =
+    document.getElementById("mysteryProgress");
+
+  const activeCompanion =
+    document.getElementById("activeCompanion");
+
+  const companionStatus =
+    document.getElementById("companionStatus");
+
+  const eventMessage =
+    document.getElementById("eventMessage");
+
+  const modal =
+    document.getElementById("modal");
+
+  const modalTitle =
+    document.getElementById("modalTitle");
+
+  const modalBody =
+    document.getElementById("modalBody");
 
   const achievementToast =
     document.getElementById("achievementToast");
 
   const achievementText =
     document.getElementById("achievementText");
+
+  const voiceBtn =
+    document.getElementById("voiceBtn");
 
 
   /* =========================================
@@ -81,9 +119,11 @@ document.addEventListener("DOMContentLoaded", () => {
   function showScreen(screenName) {
 
     Object.values(screens).forEach((screen) => {
+
       if (screen) {
         screen.classList.remove("active");
       }
+
     });
 
     if (screens[screenName]) {
@@ -146,42 +186,55 @@ document.addEventListener("DOMContentLoaded", () => {
 
     speech.volume = 0.9;
 
-    if (type === "queen") {
-      speech.rate = 0.88;
-      speech.pitch = 1.05;
-    }
+    switch (type) {
 
-    else if (type === "fairy") {
-      speech.rate = 0.95;
-      speech.pitch = 1.35;
-    }
+      case "queen":
+        speech.rate = 0.88;
+        speech.pitch = 1.05;
+        break;
 
-    else if (type === "robot") {
-      speech.rate = 1.05;
-      speech.pitch = 1.15;
-    }
+      case "fairy":
+        speech.rate = 0.95;
+        speech.pitch = 1.35;
+        break;
 
-    else if (type === "witch") {
-      speech.rate = 0.72;
-      speech.pitch = 0.75;
-    }
+      case "robot":
+        speech.rate = 1.05;
+        speech.pitch = 1.15;
+        break;
 
-    else if (type === "ghost") {
-      speech.rate = 0.7;
-      speech.pitch = 0.85;
-    }
+      case "witch":
+        speech.rate = 0.72;
+        speech.pitch = 0.75;
+        break;
 
-    else if (type === "guardian") {
-      speech.rate = 0.8;
-      speech.pitch = 0.65;
-    }
+      case "ghost":
+        speech.rate = 0.7;
+        speech.pitch = 0.85;
+        break;
 
-    else {
-      speech.rate = 0.9;
-      speech.pitch = 1;
+      case "guardian":
+        speech.rate = 0.8;
+        speech.pitch = 0.65;
+        break;
+
+      default:
+        speech.rate = 0.9;
+        speech.pitch = 1;
     }
 
     window.speechSynthesis.speak(speech);
+  }
+
+
+  function updateVoiceButton() {
+
+    if (!voiceBtn) return;
+
+    voiceBtn.textContent =
+      GameState.voiceEnabled
+        ? "🔊"
+        : "🔇";
   }
 
 
@@ -202,6 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (playerAvatar) {
+
       playerAvatar.textContent =
         GameState.player.character === "female"
           ? "👸"
@@ -209,16 +263,31 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (courageBar) {
+
+      const courage =
+        Math.max(
+          0,
+          Math.min(100, GameState.player.courage)
+        );
+
       courageBar.style.width =
-        GameState.player.courage + "%";
+        courage + "%";
     }
 
     if (magicBar) {
+
+      const magic =
+        Math.max(
+          0,
+          Math.min(100, GameState.player.magic)
+        );
+
       magicBar.style.width =
-        GameState.player.magic + "%";
+        magic + "%";
     }
 
     if (mysteryProgress) {
+
       mysteryProgress.textContent =
         Clues discovered: ${GameState.clues.length};
     }
@@ -226,11 +295,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (GameState.companion) {
 
       if (activeCompanion) {
+
         activeCompanion.textContent =
           GameState.companion.name;
       }
 
       if (companionStatus) {
+
         companionStatus.textContent =
           GameState.companion.description;
       }
@@ -242,10 +313,13 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (companionStatus) {
+
         companionStatus.textContent =
           "You are travelling alone.";
       }
     }
+
+    updateVoiceButton();
   }
 
 
@@ -260,7 +334,11 @@ document.addEventListener("DOMContentLoaded", () => {
     eventMessage.textContent = message;
 
     setTimeout(() => {
-      eventMessage.textContent = "";
+
+      if (eventMessage.textContent === message) {
+        eventMessage.textContent = "";
+      }
+
     }, 4000);
   }
 
@@ -276,18 +354,19 @@ document.addEventListener("DOMContentLoaded", () => {
         (item) => item.name === name
       );
 
-    if (!exists) {
+    if (exists) return;
 
-      GameState.inventory.push({
-        icon,
-        name,
-        description
-      });
+    GameState.inventory.push({
+      icon,
+      name,
+      description
+    });
 
-      showEvent(
-        ${icon} Added to inventory: ${name}
-      );
-    }
+    showEvent(
+      ${icon} Added to inventory: ${name}
+    );
+
+    updateHUD();
   }
 
 
@@ -333,9 +412,13 @@ document.addEventListener("DOMContentLoaded", () => {
       achievementToast.classList.add("show");
 
       setTimeout(() => {
+
         achievementToast.classList.remove("show");
+
       }, 4500);
     }
+
+    updateHUD();
   }
 
 
@@ -397,98 +480,153 @@ document.addEventListener("DOMContentLoaded", () => {
      SCENE LOADER
   ========================================= */
 
-  function loadScene(scene) {
+  function loadScene(
+    scene,
+    options = {}
+  ) {
 
     if (!scene) return;
 
-    GameState.currentScene = scene.id;
+    const {
+      triggerRandomEvent = true,
+      speakDialogue = true
+    } = options;
+
+    GameState.currentScene =
+      scene.id;
 
     GameState.player.location =
       scene.location;
 
+
+    /* Scene information */
+
     if (chapterLabel) {
+
       chapterLabel.textContent =
         scene.chapter;
     }
 
     if (sceneTitle) {
+
       sceneTitle.textContent =
         scene.title;
     }
 
     if (worldSymbol) {
+
       worldSymbol.textContent =
         scene.symbol;
     }
 
+
+    /* Speaker information */
+
     if (speakerName) {
+
       speakerName.textContent =
         scene.speaker.name;
     }
 
     if (speakerRole) {
+
       speakerRole.textContent =
         scene.speaker.role;
     }
 
     if (speakerIcon) {
+
       speakerIcon.textContent =
         scene.speaker.icon;
     }
 
+
+    /* Dialogue */
+
     if (dialogueText) {
+
       dialogueText.textContent =
         scene.text;
     }
+
+
+    /* Choices */
 
     if (choicesContainer) {
 
       choicesContainer.innerHTML = "";
 
-      scene.choices.forEach((choice) => {
+      if (
+        Array.isArray(scene.choices) &&
+        scene.choices.length > 0
+      ) {
 
-        const button =
-          document.createElement("button");
+        scene.choices.forEach((choice) => {
 
-        button.className =
-          "choice-btn";
+          const button =
+            document.createElement("button");
 
-        button.textContent =
-          choice.text;
+          button.className =
+            "choice-btn";
 
-        button.addEventListener(
-          "click",
-          () => {
+          button.type = "button";
 
-            if (choice.action) {
-              choice.action();
-            }
+          button.textContent =
+            choice.text;
 
-            if (
-              choice.next &&
-              Scenes[choice.next]
-            ) {
-              loadScene(
+          button.addEventListener(
+            "click",
+            () => {
+
+              /* Run choice action */
+
+              if (typeof choice.action === "function") {
+                choice.action();
+              }
+
+
+              /* Go to next scene */
+
+              if (
+                choice.next &&
                 Scenes[choice.next]
-              );
-            }
-          }
-        );
+              ) {
 
-        choicesContainer.appendChild(
-          button
-        );
-      });
+                loadScene(
+                  Scenes[choice.next]
+                );
+              }
+
+            }
+          );
+
+          choicesContainer.appendChild(
+            button
+          );
+        });
+      }
     }
+
 
     updateHUD();
 
-    speak(
-      scene.text,
-      scene.speaker.voice
-    );
 
-    randomEvent();
+    /* Speak only when requested */
+
+    if (speakDialogue) {
+
+      speak(
+        scene.text,
+        scene.speaker.voice
+      );
+    }
+
+
+    /* Random events are disabled when loading a save */
+
+    if (triggerRandomEvent) {
+      randomEvent();
+    }
   }
 
 
@@ -498,11 +636,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const Scenes = {
 
+    /* =====================================
+       FOREST
+    ===================================== */
+
     forestStart: {
+
       id: "forestStart",
+
       chapter: "CHAPTER ONE",
+
       title: "The Whispering Forest",
+
       location: "Whispering Forest",
+
       symbol: "🌲",
 
       speaker: {
@@ -520,11 +667,13 @@ document.addEventListener("DOMContentLoaded", () => {
         {
           text:
             "Follow the whisper deeper into the forest.",
+
           next:
             "forestWhisper"
         },
 
         {
+
           text:
             "Search the ground for clues.",
 
@@ -573,11 +722,15 @@ document.addEventListener("DOMContentLoaded", () => {
       choices: [
 
         {
-          text: "Ask who is speaking.",
-          next: "companionArrival"
+          text:
+            "Ask who is speaking.",
+
+          next:
+            "companionArrival"
         },
 
         {
+
           text:
             "Ignore the voice and continue.",
 
@@ -592,7 +745,8 @@ document.addEventListener("DOMContentLoaded", () => {
             updateHUD();
           },
 
-          next: "darkForest"
+          next:
+            "darkForest"
         }
       ]
     },
@@ -629,7 +783,9 @@ document.addEventListener("DOMContentLoaded", () => {
           action: () => {
 
             setCompanion({
+
               name: "NOVA",
+
               description:
                 "A dimensional guide carrying mysterious gadgets."
             });
@@ -647,18 +803,24 @@ document.addEventListener("DOMContentLoaded", () => {
             );
           },
 
-          next: "crownClue"
+          next:
+            "crownClue"
         },
 
         {
+
           text:
             "Tell NOVA you do not trust anyone yet.",
 
           action: () => {
+
             GameState.companionTrust = 30;
+
+            updateHUD();
           },
 
-          next: "crownClue"
+          next:
+            "crownClue"
         }
       ]
     },
@@ -689,11 +851,15 @@ document.addEventListener("DOMContentLoaded", () => {
       choices: [
 
         {
-          text: "Turn around.",
-          next: "companionArrival"
+          text:
+            "Turn around.",
+
+          next:
+            "companionArrival"
         },
 
         {
+
           text:
             "Run toward the distant light.",
 
@@ -708,11 +874,16 @@ document.addEventListener("DOMContentLoaded", () => {
             updateHUD();
           },
 
-          next: "crownClue"
+          next:
+            "crownClue"
         }
       ]
     },
 
+
+    /* =====================================
+       CROWN
+    ===================================== */
 
     crownClue: {
 
@@ -739,6 +910,7 @@ document.addEventListener("DOMContentLoaded", () => {
       choices: [
 
         {
+
           text:
             "Search for the Crown's first clue.",
 
@@ -753,18 +925,25 @@ document.addEventListener("DOMContentLoaded", () => {
             );
           },
 
-          next: "portalChoice"
+          next:
+            "portalChoice"
         },
 
         {
+
           text:
             "Ask NOVA to open the Dimensional Gateway.",
 
-          next: "portalChoice"
+          next:
+            "portalChoice"
         }
       ]
     },
 
+
+    /* =====================================
+       PORTALS
+    ===================================== */
 
     portalChoice: {
 
@@ -774,8 +953,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       title: "The Portals Respond",
 
-      location:
-        "Crossroads Between Worlds",
+      location: "Crossroads Between Worlds",
 
       symbol: "🌌",
 
@@ -794,6 +972,7 @@ document.addEventListener("DOMContentLoaded", () => {
         {
           text:
             "Enter the Frozen Mountains.",
+
           next:
             "mountainKingdom"
         },
@@ -801,6 +980,7 @@ document.addEventListener("DOMContentLoaded", () => {
         {
           text:
             "Enter the Forgotten Palace.",
+
           next:
             "palaceArrival"
         },
@@ -808,6 +988,7 @@ document.addEventListener("DOMContentLoaded", () => {
         {
           text:
             "Enter the Witch Territory.",
+
           next:
             "witchEncounter"
         },
@@ -815,12 +996,17 @@ document.addEventListener("DOMContentLoaded", () => {
         {
           text:
             "Enter the Dream Realm.",
+
           next:
             "dreamRealm"
         }
       ]
     },
 
+
+    /* =====================================
+       CRYSTAL KINGDOM
+    ===================================== */
 
     mountainKingdom: {
 
@@ -836,8 +1022,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       speaker: {
         name: "Queen Aurelia",
-        role:
-          "Guardian of the Crystal Kingdom",
+        role: "Guardian of the Crystal Kingdom",
         icon: "👑",
         voice: "queen"
       },
@@ -848,6 +1033,7 @@ document.addEventListener("DOMContentLoaded", () => {
       choices: [
 
         {
+
           text:
             "Tell the Queen about the Lost Crown.",
 
@@ -862,18 +1048,25 @@ document.addEventListener("DOMContentLoaded", () => {
             );
           },
 
-          next: "finalMystery"
+          next:
+            "finalMystery"
         },
 
         {
+
           text:
             "Ask the Queen for help.",
 
-          next: "finalMystery"
+          next:
+            "finalMystery"
         }
       ]
     },
 
+
+    /* =====================================
+       FORGOTTEN PALACE
+    ===================================== */
 
     palaceArrival: {
 
@@ -881,11 +1074,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       chapter: "CHAPTER SIX",
 
-      title:
-        "The Palace That Remembers",
+      title: "The Palace That Remembers",
 
-      location:
-        "Forgotten Palace",
+      location: "Forgotten Palace",
 
       symbol: "🏰",
 
@@ -902,6 +1093,7 @@ document.addEventListener("DOMContentLoaded", () => {
       choices: [
 
         {
+
           text:
             "Inspect the portraits.",
 
@@ -918,18 +1110,25 @@ document.addEventListener("DOMContentLoaded", () => {
             );
           },
 
-          next: "finalMystery"
+          next:
+            "finalMystery"
         },
 
         {
+
           text:
             "Enter the royal hall.",
 
-          next: "finalMystery"
+          next:
+            "finalMystery"
         }
       ]
     },
 
+
+    /* =====================================
+       WITCH TERRITORY
+    ===================================== */
 
     witchEncounter: {
 
@@ -937,18 +1136,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       chapter: "CHAPTER SIX",
 
-      title:
-        "The Witch's Warning",
+      title: "The Witch's Warning",
 
-      location:
-        "Witch Territory",
+      location: "Witch Territory",
 
       symbol: "🧙",
 
       speaker: {
         name: "MORVA",
-        role:
-          "Keeper of Forbidden Knowledge",
+        role: "Keeper of Forbidden Knowledge",
         icon: "🧙",
         voice: "witch"
       },
@@ -959,6 +1155,7 @@ document.addEventListener("DOMContentLoaded", () => {
       choices: [
 
         {
+
           text:
             "Ask what the Crown will awaken.",
 
@@ -969,18 +1166,25 @@ document.addEventListener("DOMContentLoaded", () => {
             );
           },
 
-          next: "finalMystery"
+          next:
+            "finalMystery"
         },
 
         {
+
           text:
             "Refuse to trust the Witch.",
 
-          next: "finalMystery"
+          next:
+            "finalMystery"
         }
       ]
     },
 
+
+    /* =====================================
+       DREAM REALM
+    ===================================== */
 
     dreamRealm: {
 
@@ -988,18 +1192,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       chapter: "CHAPTER SIX",
 
-      title:
-        "A World That Should Not Exist",
+      title: "A World That Should Not Exist",
 
-      location:
-        "Dream Realm",
+      location: "Dream Realm",
 
       symbol: "🌠",
 
       speaker: {
         name: "LYRA",
-        role:
-          "Fairy of Forgotten Paths",
+        role: "Fairy of Forgotten Paths",
         icon: "🧚",
         voice: "fairy"
       },
@@ -1010,13 +1211,16 @@ document.addEventListener("DOMContentLoaded", () => {
       choices: [
 
         {
+
           text:
             "Ask LYRA to guide you.",
 
           action: () => {
 
             setCompanion({
+
               name: "LYRA",
+
               description:
                 "A gentle fairy who reveals hidden paths."
             });
@@ -1030,10 +1234,12 @@ document.addEventListener("DOMContentLoaded", () => {
             updateHUD();
           },
 
-          next: "finalMystery"
+          next:
+            "finalMystery"
         },
 
         {
+
           text:
             "Explore alone.",
 
@@ -1044,33 +1250,27 @@ document.addEventListener("DOMContentLoaded", () => {
     },
 
 
+    /* =====================================
+       FINAL MYSTERY
+    ===================================== */
+
     finalMystery: {
 
       id: "finalMystery",
 
-      chapter:
-        "CHAPTER SEVEN",
+      chapter: "CHAPTER SEVEN",
 
-      title:
-        "The Crown Awakens",
+      title: "The Crown Awakens",
 
-      location:
-        "The Hidden Throne",
+      location: "The Hidden Throne",
 
       symbol: "👑",
 
       speaker: {
-        name:
-          "The Crown",
-
-        role:
-          "An Ancient Power",
-
-        icon:
-          "👑",
-
-        voice:
-          "guardian"
+        name: "The Crown",
+        role: "An Ancient Power",
+        icon: "👑",
+        voice: "guardian"
       },
 
       text:
@@ -1079,6 +1279,7 @@ document.addEventListener("DOMContentLoaded", () => {
       choices: [
 
         {
+
           text:
             "Protect the kingdoms.",
 
@@ -1090,12 +1291,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             showEnding(
               "THE GUARDIAN ENDING",
+
               "You choose to protect the kingdoms. The portals close peacefully, and your name becomes a legend."
             );
           }
         },
 
         {
+
           text:
             "Discover the Crown's full power.",
 
@@ -1107,6 +1310,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             showEnding(
               "THE MYSTERY ENDING",
+
               "You reach toward the Crown's hidden power. The world fades into silence, and somewhere beyond the throne, another door opens."
             );
           }
@@ -1145,6 +1349,10 @@ document.addEventListener("DOMContentLoaded", () => {
       speakerIcon.textContent = "✨";
     }
 
+    if (worldSymbol) {
+      worldSymbol.textContent = "✨";
+    }
+
     if (dialogueText) {
       dialogueText.textContent = text;
     }
@@ -1158,6 +1366,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       restartButton.className =
         "primary-btn";
+
+      restartButton.type = "button";
 
       restartButton.textContent =
         "Begin Another Journey";
@@ -1181,7 +1391,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     speak(text, "guardian");
 
-    saveGame();
+    saveGame(false);
   }
 
 
@@ -1191,111 +1401,147 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function openPanel(panel) {
 
-    if (!modal) return;
+    if (!modal || !modalTitle || !modalBody) {
+      return;
+    }
 
     modal.classList.add("show");
+
+
+    /* =====================================
+       INVENTORY
+    ===================================== */
 
     if (panel === "inventory") {
 
       modalTitle.textContent =
         "🎒 Mystical Inventory";
 
-      modalBody.innerHTML =
-        GameState.inventory.length
+      if (GameState.inventory.length > 0) {
 
-          ? GameState.inventory
-              .map(
-                (item) => `
-                  <div class="item-row">
-                    <strong>
-                      ${item.icon} ${item.name}
-                    </strong>
-                    <p>
-                      ${item.description}
-                    </p>
-                  </div>
-                `
-              )
-              .join("")
+        modalBody.innerHTML =
+          GameState.inventory
+            .map(
+              (item) => `
+                <div class="item-row">
+                  <strong>
+                    ${item.icon} ${item.name}
+                  </strong>
 
-          : "<p>Your inventory is empty.</p>";
+                  <p>
+                    ${item.description}
+                  </p>
+                </div>
+              `
+            )
+            .join("");
+
+      } else {
+
+        modalBody.innerHTML =
+          "<p>Your inventory is empty.</p>";
+      }
     }
 
+
+    /* =====================================
+       JOURNAL
+    ===================================== */
 
     else if (panel === "journal") {
 
       modalTitle.textContent =
         "📖 Mystery Journal";
 
-      modalBody.innerHTML =
-        GameState.clues.length
+      if (GameState.clues.length > 0) {
 
-          ? GameState.clues
-              .map(
-                (clue) => `
-                  <div class="item-row">
-                    🔍 ${clue}
-                  </div>
-                `
-              )
-              .join("")
+        modalBody.innerHTML =
+          GameState.clues
+            .map(
+              (clue) => `
+                <div class="item-row">
+                  🔍 ${clue}
+                </div>
+              `
+            )
+            .join("");
 
-          : "<p>No clues discovered yet.</p>";
+      } else {
+
+        modalBody.innerHTML =
+          "<p>No clues discovered yet.</p>";
+      }
     }
 
+
+    /* =====================================
+       COMPANIONS
+    ===================================== */
 
     else if (panel === "companions") {
 
       modalTitle.textContent =
         "🤖 Companion System";
 
-      modalBody.innerHTML =
-        GameState.companion
+      if (GameState.companion) {
 
-          ? `
-            <div class="item-row">
-              <strong>
-                ${GameState.companion.name}
-              </strong>
+        modalBody.innerHTML = `
+          <div class="item-row">
 
-              <p>
-                ${GameState.companion.description}
-              </p>
+            <strong>
+              ${GameState.companion.name}
+            </strong>
 
-              <p>
-                Trust Level:
-                ${GameState.companionTrust}%
-              </p>
-            </div>
-          `
-
-          : `
             <p>
-              You are currently travelling alone.
+              ${GameState.companion.description}
             </p>
-          `;
+
+            <p>
+              Trust Level:
+              ${GameState.companionTrust}%
+            </p>
+
+          </div>
+        `;
+
+      } else {
+
+        modalBody.innerHTML = `
+          <p>
+            You are currently travelling alone.
+          </p>
+        `;
+      }
     }
 
+
+    /* =====================================
+       ACHIEVEMENTS
+    ===================================== */
 
     else if (panel === "achievements") {
 
       modalTitle.textContent =
         "🏆 Achievements";
 
-      modalBody.innerHTML =
-        GameState.achievements.length
+      if (GameState.achievements.length > 0) {
 
-          ? GameState.achievements
-              .map(
-                (achievement) => `
-                  <div class="item-row">
-                    🏆 ${achievement}
-                  </div>
-                `
-              )
-              .join("")
+        modalBody.innerHTML =
+          GameState.achievements
+            .map(
+              (achievement) => `
+                <div class="item-row">
+                  🏆 ${achievement}
+                </div>
+              `
+            )
+            .join("");
 
-          : "<p>No achievements unlocked yet.</p>";
+      } else {
+
+        modalBody.innerHTML =
+          "<p>No achievements unlocked yet.</p>";
+      }
     }
   }
 
@@ -1304,7 +1550,7 @@ document.addEventListener("DOMContentLoaded", () => {
      SAVE GAME
   ========================================= */
 
-  function saveGame() {
+  function saveGame(showMessage = true) {
 
     try {
 
@@ -1313,9 +1559,12 @@ document.addEventListener("DOMContentLoaded", () => {
         JSON.stringify(GameState)
       );
 
-      showEvent(
-        "💾 Journey saved successfully."
-      );
+      if (showMessage) {
+
+        showEvent(
+          "💾 Journey saved successfully."
+        );
+      }
 
     } catch (error) {
 
@@ -1323,6 +1572,13 @@ document.addEventListener("DOMContentLoaded", () => {
         "Save error:",
         error
       );
+
+      if (showMessage) {
+
+        showEvent(
+          "⚠️ Unable to save your journey."
+        );
+      }
     }
   }
 
@@ -1352,14 +1608,68 @@ document.addEventListener("DOMContentLoaded", () => {
       const savedState =
         JSON.parse(saved);
 
-      Object.assign(
-        GameState,
-        savedState
-      );
+
+      /* Restore player */
+
+      if (savedState.player) {
+
+        GameState.player = {
+          ...GameState.player,
+          ...savedState.player
+        };
+      }
+
+
+      /* Restore arrays */
+
+      GameState.inventory =
+        Array.isArray(savedState.inventory)
+          ? savedState.inventory
+          : [];
+
+      GameState.clues =
+        Array.isArray(savedState.clues)
+          ? savedState.clues
+          : [];
+
+      GameState.achievements =
+        Array.isArray(savedState.achievements)
+          ? savedState.achievements
+          : [];
+
+
+      /* Restore companion */
+
+      GameState.companion =
+        savedState.companion || null;
+
+
+      /* Restore trust */
+
+      GameState.companionTrust =
+        typeof savedState.companionTrust === "number"
+          ? savedState.companionTrust
+          : 50;
+
+
+      /* Restore scene */
+
+      GameState.currentScene =
+        savedState.currentScene || null;
+
+
+      /* Restore voice */
+
+      GameState.voiceEnabled =
+        typeof savedState.voiceEnabled === "boolean"
+          ? savedState.voiceEnabled
+          : true;
+
 
       showScreen("game");
 
       updateHUD();
+
 
       if (
         GameState.currentScene &&
@@ -1367,10 +1677,16 @@ document.addEventListener("DOMContentLoaded", () => {
       ) {
 
         loadScene(
-          Scenes[
-            GameState.currentScene
-          ]
+          Scenes[GameState.currentScene],
+          {
+            triggerRandomEvent: false,
+            speakDialogue: true
+          }
         );
+
+      } else {
+
+        showScreen("world");
       }
 
     } catch (error) {
@@ -1400,9 +1716,7 @@ document.addEventListener("DOMContentLoaded", () => {
         () => {
 
           document
-            .querySelectorAll(
-              ".character-card"
-            )
+            .querySelectorAll(".character-card")
             .forEach((item) => {
 
               item.classList.remove(
@@ -1423,6 +1737,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 
+  /* =========================================
+     OUTFIT SELECTION
+  ========================================= */
+
   document
     .querySelectorAll(".outfit-card")
     .forEach((card) => {
@@ -1432,9 +1750,7 @@ document.addEventListener("DOMContentLoaded", () => {
         () => {
 
           document
-            .querySelectorAll(
-              ".outfit-card"
-            )
+            .querySelectorAll(".outfit-card")
             .forEach((item) => {
 
               item.classList.remove(
@@ -1454,13 +1770,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   /* =========================================
-     MAIN BUTTON EVENTS
+     NEW GAME
   ========================================= */
 
   const newGameBtn =
-    document.getElementById(
-      "newGameBtn"
-    );
+    document.getElementById("newGameBtn");
 
   if (newGameBtn) {
 
@@ -1478,10 +1792,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 
+  /* =========================================
+     CONTINUE SAVED GAME
+  ========================================= */
+
   const continueBtn =
-    document.getElementById(
-      "continueBtn"
-    );
+    document.getElementById("continueBtn");
 
   if (continueBtn) {
 
@@ -1491,6 +1807,10 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
+
+  /* =========================================
+     CONTINUE TO WORLD SELECTION
+  ========================================= */
 
   const continueWorldBtn =
     document.getElementById(
@@ -1534,41 +1854,56 @@ document.addEventListener("DOMContentLoaded", () => {
 
           showScreen("game");
 
-          if (
-            world === "forest"
-          ) {
 
-            loadScene(
-              Scenes.forestStart
-            );
+          switch (world) {
+
+            case "forest":
+
+              loadScene(
+                Scenes.forestStart
+              );
+
+              break;
+
+
+            case "ruins":
+
+              loadScene(
+                Scenes.palaceArrival
+              );
+
+              break;
+
+
+            case "desert":
+
+              loadScene(
+                Scenes.witchEncounter
+              );
+
+              break;
+
+
+            case "mountains":
+
+              loadScene(
+                Scenes.mountainKingdom
+              );
+
+              break;
+
+
+            default:
+
+              console.warn(
+                Unknown world selected: ${world}
+              );
+
+              showScreen("world");
+
+              return;
           }
 
-          else if (
-            world === "ruins"
-          ) {
-
-            loadScene(
-              Scenes.palaceArrival
-            );
-          }
-
-          else if (
-            world === "desert"
-          ) {
-
-            loadScene(
-              Scenes.witchEncounter
-            );
-          }
-
-          else if (
-            world === "mountains"
-          ) {
-
-            loadScene(
-              Scenes.mountainKingdom
-            );
-          }
 
           unlockAchievement(
             "Entered a New Realm"
@@ -1582,11 +1917,6 @@ document.addEventListener("DOMContentLoaded", () => {
      VOICE BUTTON
   ========================================= */
 
-  const voiceBtn =
-    document.getElementById(
-      "voiceBtn"
-    );
-
   if (voiceBtn) {
 
     voiceBtn.addEventListener(
@@ -1596,10 +1926,7 @@ document.addEventListener("DOMContentLoaded", () => {
         GameState.voiceEnabled =
           !GameState.voiceEnabled;
 
-        voiceBtn.textContent =
-          GameState.voiceEnabled
-            ? "🔊"
-            : "🔇";
+        updateVoiceButton();
 
         if (
           !GameState.voiceEnabled &&
@@ -1620,15 +1947,15 @@ document.addEventListener("DOMContentLoaded", () => {
   ========================================= */
 
   const saveBtn =
-    document.getElementById(
-      "saveBtn"
-    );
+    document.getElementById("saveBtn");
 
   if (saveBtn) {
 
     saveBtn.addEventListener(
       "click",
-      saveGame
+      () => {
+        saveGame(true);
+      }
     );
   }
 
@@ -1638,9 +1965,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ========================================= */
 
   document
-    .querySelectorAll(
-      ".hud-menu-btn"
-    )
+    .querySelectorAll(".hud-menu-btn")
     .forEach((button) => {
 
       button.addEventListener(
@@ -1670,23 +1995,7 @@ document.addEventListener("DOMContentLoaded", () => {
       "click",
       () => {
 
-        modal.classList.remove(
-          "show"
-        );
-      }
-    );
-  }
-
-
-  if (modal) {
-
-    modal.addEventListener(
-      "click",
-      (event) => {
-
-        if (
-          event.target === modal
-        ) {
+        if (modal) {
 
           modal.classList.remove(
             "show"
@@ -1695,6 +2004,48 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     );
   }
+
+
+  /* =========================================
+     CLOSE MODAL BY CLICKING OUTSIDE
+  ========================================= */
+
+  if (modal) {
+
+    modal.addEventListener(
+      "click",
+      (event) => {
+
+        if (event.target === modal) {
+
+          modal.classList.remove(
+            "show"
+          );
+        }
+      }
+    );
+  }
+
+
+  /* =========================================
+     ESCAPE KEY CLOSES MODAL
+  ========================================= */
+
+  document.addEventListener(
+    "keydown",
+    (event) => {
+
+      if (
+        event.key === "Escape" &&
+        modal
+      ) {
+
+        modal.classList.remove(
+          "show"
+        );
+      }
+    }
+  );
 
 
   /* =========================================
