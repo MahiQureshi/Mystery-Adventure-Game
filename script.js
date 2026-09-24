@@ -343,14 +343,12 @@ document.addEventListener("DOMContentLoaded", () => {
       magicBar.style.width =
         magic + "%";
     }
-
-
-    if (mysteryProgress) {
-
-      mysteryProgress.textContent =
+if (mysteryProgress) {
+    mysteryProgress.textContent =
         Clues discovered: ${GameState.clues.length};
-    }
+}
 
+    
 
     if (GameState.companion) {
 
